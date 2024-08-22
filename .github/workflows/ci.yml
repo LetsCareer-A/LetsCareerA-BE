@@ -21,6 +21,8 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '17'
+      - name: Create resources directory
+        run: mkdir -p src/main/resources
 
       - name: application.yml 생성
         run: |
