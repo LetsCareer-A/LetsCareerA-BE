@@ -59,7 +59,6 @@ public class AlwaysService {
             alwaysList.add(new AlwaysDTO(alwaysId, stageId, company, department, status));
         }
 
-        // AlwaysResponse 객체 생성 및 반환
         return new AlwaysResponse(page, size, alwaysList);
     }
 }
