@@ -2,6 +2,7 @@ package com.example.letscareer.career.service;
 
 import com.example.letscareer.career.domain.Career;
 import com.example.letscareer.career.dto.request.SaveCareerRequest;
+import com.example.letscareer.career.dto.response.GetCareerDetailResponse;
 import com.example.letscareer.career.repository.CareerRepository;
 import com.example.letscareer.common.exception.enums.ErrorCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
@@ -45,5 +46,23 @@ public class CareerService {
         } catch (Exception e) {
             throw new BadRequestException(ErrorCode.INTERNAL_SERVER_EXCEPTION);
         }
+    }
+
+    public GetCareerDetailResponse getCareerDetail(Long userId, Long careerId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
+
+        Career career = careerRepository.findByCareerIdAndUser(careerId, user)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.CAREER_NOT_FOUND_EXCEPTION));
+
+        return new GetCareerDetailResponse(
+                career.getCareerId(),
+                career.getCategory().getValue(),
+                career.getTitle(),
+                career.getSituation(),
+                career.getTask(),
+                career.getAction(),
+                career.getResult()
+        );
     }
 }
