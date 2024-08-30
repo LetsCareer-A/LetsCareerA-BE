@@ -5,12 +5,11 @@ import com.example.letscareer.career.service.CareerService;
 import com.example.letscareer.common.dto.ApiResponse;
 import com.example.letscareer.common.dto.ErrorResponse;
 import com.example.letscareer.common.dto.SuccessNonDataResponse;
-import com.example.letscareer.common.exception.enums.ErrorCode;
+import com.example.letscareer.common.dto.SuccessResponse;
 import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
-import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +30,16 @@ public class CareerController {
             careerService.saveCareer(userId, request);
             return SuccessNonDataResponse.success(SuccessCode.SAVE_CAREER_SUCCESS);
         } catch (NotFoundException | BadRequestException | ValidationException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
+
+    @GetMapping("/{careerId}")
+    public ApiResponse getCareerDetail(@RequestHeader("userId") Long userId,
+                                 @PathVariable Long careerId) {
+        try {
+            return SuccessResponse.success(SuccessCode.GET_CAREER_DETAIL_SUCCESS, careerService.getCareerDetail(userId, careerId));
+        } catch (NotFoundException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
     }

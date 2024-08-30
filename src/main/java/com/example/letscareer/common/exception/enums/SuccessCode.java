@@ -10,7 +10,8 @@ public enum SuccessCode {
 
 
     SCHEDULE_SUCCESS(HttpStatus.OK, "일정 찾기 성공입니다."),
-    SAVE_CAREER_SUCCESS(HttpStatus.CREATED, "커리어 등록 성공");
+    SAVE_CAREER_SUCCESS(HttpStatus.CREATED, "커리어 등록 성공"),
+    GET_CAREER_DETAIL_SUCCESS(HttpStatus.OK, "커리어 상세 조회 성공");
 
     private final HttpStatus httpStatus;
     private final String message;
