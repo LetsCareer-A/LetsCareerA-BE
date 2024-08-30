@@ -29,10 +29,12 @@ public class ScheduleController {
             @RequestParam("month") int month,
             @RequestParam("page") int page,
             @RequestParam("size") int size) {
-
-            ScheduleResponse scheduleResponse = scheduleService.getSchedules(userId, month, page, size);
-            return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, scheduleResponse);
-
+            try {
+                ScheduleResponse scheduleResponse = scheduleService.getSchedules(userId, month, page, size);
+                return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, scheduleResponse);
+            }catch (NotFoundException | BadRequestException e) {
+                return ErrorResponse.error(e.getErrorCode());
+            }
     }
 
     @GetMapping("/date")

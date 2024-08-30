@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StageRepository extends JpaRepository<Stage, Long> {
@@ -20,4 +21,5 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
 
     @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND st.date = :date")
     List<Stage>findAllByUserIdAndDate(@Param("userId") Long userId, @Param("date") Date date);
+    Optional<Stage> findTopByAlwaysAlwaysIdOrderByOrderDesc(Long alwaysId);
 }
