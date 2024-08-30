@@ -43,4 +43,15 @@ public class CareerController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
+
+    @GetMapping
+    public ApiResponse getCareers(@RequestHeader("userId") Long userId,
+                                  @RequestParam(value = "page", defaultValue = "1") int page,
+                                  @RequestParam(value = "size", defaultValue = "15") int size) {
+        try {
+            return SuccessResponse.success(SuccessCode.GET_CAREER_DETAIL_SUCCESS, careerService.getCareers(userId, page, size));
+        } catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
 }
