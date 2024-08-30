@@ -5,7 +5,9 @@ import com.example.letscareer.common.dto.ErrorResponse;
 import com.example.letscareer.common.dto.SuccessResponse;
 import com.example.letscareer.common.exception.enums.ErrorCode;
 import com.example.letscareer.common.exception.enums.SuccessCode;
+import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
+import com.example.letscareer.common.exception.model.ValidationException;
 import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.service.ScheduleService;
@@ -38,7 +40,11 @@ public class ScheduleController {
             @RequestHeader("userId") Long userId,
             @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
-        DateClickScheduleResponse response = scheduleService.getDateSchedules(userId, date);
-        return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, response);
+        try{
+            DateClickScheduleResponse response = scheduleService.getDateSchedules(userId, date);
+            return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, response);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
     }
 }
