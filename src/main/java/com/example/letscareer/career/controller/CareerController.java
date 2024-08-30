@@ -39,7 +39,7 @@ public class CareerController {
                                  @PathVariable Long careerId) {
         try {
             return SuccessResponse.success(SuccessCode.GET_CAREER_DETAIL_SUCCESS, careerService.getCareerDetail(userId, careerId));
-        } catch (NotFoundException e) {
+        } catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
