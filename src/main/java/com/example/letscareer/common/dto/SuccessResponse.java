@@ -9,11 +9,12 @@ import lombok.ToString;
 @Getter
 @ToString
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SuccessResponse extends ApiResponse{
+public class SuccessResponse<T> extends ApiResponse{
     private final int code;
     private final String message;
+    private final T data;
 
-    public static SuccessResponse success(SuccessCode successCode) {
-        return new SuccessResponse(successCode.getHttpStatus().value(), successCode.getMessage());
+    public static <T> SuccessResponse<T> success(SuccessCode successCode, T data) {
+        return new SuccessResponse(successCode.getHttpStatus().value(), successCode.getMessage(), data);
     }
 }

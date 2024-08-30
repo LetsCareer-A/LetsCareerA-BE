@@ -9,9 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum SuccessCode {
 
 
-    LOGOUT_SUCCESS(HttpStatus.OK, "로그아웃 성공입니다."); //예
-
-
+    SCHEDULE_SUCCESS(HttpStatus.OK, "일정 찾기 성공입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
