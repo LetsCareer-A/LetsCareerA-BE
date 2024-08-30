@@ -1,4 +1,4 @@
-package com.example.letscareer.schedule.dto.response;
+package com.example.letscareer.schedule.dto;
 
 import com.example.letscareer.schedule.domain.Progress;
 

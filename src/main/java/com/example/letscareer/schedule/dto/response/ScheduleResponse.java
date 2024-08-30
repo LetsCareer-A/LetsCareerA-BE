@@ -1,5 +1,7 @@
 package com.example.letscareer.schedule.dto.response;
 
+import com.example.letscareer.schedule.dto.StageDTO;
+
 import java.util.List;
 
 public record ScheduleResponse(

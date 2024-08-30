@@ -2,10 +2,12 @@ package com.example.letscareer.schedule.service;
 
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.domain.Schedule;
-import com.example.letscareer.schedule.dto.response.StageDTO;
+import com.example.letscareer.schedule.dto.StageDTO;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
+import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
+import com.example.letscareer.schedule.dto.DateScheduleDTO;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
@@ -96,6 +98,56 @@ public class ScheduleService {
         );
     }
 
+    public DateClickScheduleResponse getDateSchedules(final Long userId, final Date date) {
+        // 사용자가 존재하는지 확인
+        Optional<User> user = userRepository.findByUserId(userId);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+        }
+
+        // 특정 날짜와 사용자에 해당하는 모든 Stage를 조회
+        List<Stage> stages = stageRepository.findAllByUserIdAndDate(userId, date);
+
+        // 스케줄 정보 초기화
+        List<DateScheduleDTO> schedules = new ArrayList<>();
+        int totalCount = stages.size(); // 해당 날짜의 일정 수
+        int plusCount = Math.max(0, totalCount - 2); // 일정 수가 2 이상이면 +n 건으로 표시
+
+        for (Stage stage : stages) {
+            Schedule schedule = stage.getSchedule();
+            if (schedule != null) {
+                Long scheduleId = schedule.getScheduleId();
+                Long stageId = stage.getStageId();
+                String company = schedule.getCompany();
+                String department = schedule.getDepartment();
+                String type = stage.getType().getValue();
+
+                // D-day 계산
+                Integer dday = (stage.getDate() != null) ? calculateDday(stage.getDate()) : null;
+
+                // 진행 상태
+                String progress = schedule.getProgress().getValue();
+
+                // DTO로 변환하여 리스트에 추가
+                schedules.add(new DateScheduleDTO(
+                        scheduleId,
+                        stageId,
+                        company,
+                        department,
+                        type,
+                        dday,
+                        progress
+                ));
+            }
+        }
+
+        // 결과 반환
+        return new DateClickScheduleResponse(
+                totalCount,
+                plusCount,
+                schedules
+        );
+    }
     private int calculateDday(Date deadline) {
         LocalDate deadlineDate = deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         int dday = Period.between(LocalDate.now(), deadlineDate).getDays();
