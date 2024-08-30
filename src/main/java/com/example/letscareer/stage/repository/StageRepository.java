@@ -13,8 +13,8 @@ import java.util.List;
 
 @Repository
 public interface StageRepository extends JpaRepository<Stage, Long> {
-    @Query("SELECT DISTINCT st.schedule FROM Stage st WHERE st.schedule.user.userId= :userId AND FUNCTION('MONTH', st.date) = :month")
-    Page<Schedule> findSchedulesByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
 
+    @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND FUNCTION('MONTH', st.date) = :month")
+    Page<Stage> findAllByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
     List<Stage>findAllByScheduleScheduleId(Long scheduleId);
 }

@@ -17,10 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.time.ZoneId;
+import java.util.*;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
 
@@ -32,7 +30,7 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
 
     public ScheduleResponse getSchedules(final Long userId, final int month, final int page, final int size) {
-        // Retrieve user
+
         Optional<User> user = userRepository.findByUserId(userId);
         if (user.isEmpty()) {
             throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
@@ -40,27 +38,23 @@ public class ScheduleService {
 
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Schedule> schedulePage = scheduleRepository.findAllByUserIdAndMonth(userId, month, pageable);
+        // user, month 로 stage 찾기
+        Page<Stage> stagePage = stageRepository.findAllByUserIdAndMonth(userId, month, pageable);
 
-        // 초기화
         int docCount = 0;
         int midCount = 0;
         int interviewCount = 0;
 
-        // response 안 shceudles 초기화
         List<StageDTO> schedules = new ArrayList<>();
 
-        // schedule 마다 stage 찾기
-        for (Schedule schedule : schedulePage) {
-            Long scheduleId = schedule.getScheduleId();
-            List<Stage> stages = stageRepository.findAllByScheduleScheduleId(scheduleId);
-
-            for (Stage stage : stages) {
+        for (Stage stage : stagePage) {
+            Schedule schedule = stage.getSchedule();
+            if (schedule != null) {
+                Long scheduleId = schedule.getScheduleId();
                 Long stageId = stage.getStageId();
-                String type = stage.getType().name();
-                String deadline = stage.getDate().toString();
+                String type = stage.getType().getValue();
+                Date deadline = stage.getDate();
 
-                // Increment count based on type
                 switch (stage.getType()) {
                     case DOC:
                         docCount++;
@@ -72,11 +66,8 @@ public class ScheduleService {
                         interviewCount++;
                         break;
                 }
-
-                // Calculate dday
                 Integer dday = (deadline != null) ? calculateDday(deadline) : null;
 
-                // Map each stage to ScheduleDTO and add to list
                 schedules.add(new StageDTO(
                         scheduleId,
                         stageId,
@@ -89,8 +80,12 @@ public class ScheduleService {
                 ));
             }
         }
-        // dday 기준으로 정렬 -1, -3, +1
-        schedules.sort(Comparator.comparingInt((StageDTO dto) -> dto.dday()).thenComparingInt(dto -> Math.abs(dto.dday())));
+
+         //sort  -1, -3, +1
+        schedules.sort(
+                Comparator.<StageDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
+                        .thenComparingInt(dto -> Math.abs(dto.dday()))  // 절대값 기준 정렬
+        );
         return new ScheduleResponse(
                 page,
                 size,
@@ -101,9 +96,11 @@ public class ScheduleService {
         );
     }
 
-    private int calculateDday(String deadline) {
-        LocalDate deadlineDate = LocalDate.parse(deadline);
-        return Period.between(LocalDate.now(), deadlineDate).getDays();
+    private int calculateDday(Date deadline) {
+        LocalDate deadlineDate = deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int dday = Period.between(LocalDate.now(), deadlineDate).getDays();
+        return dday;
     }
+
 }
 

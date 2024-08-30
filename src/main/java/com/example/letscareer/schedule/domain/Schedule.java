@@ -30,5 +30,4 @@ public class Schedule {
     private Progress progress;
 
     private String url;
-    private Date date;
 }

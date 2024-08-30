@@ -11,6 +11,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
-    @Query("SELECT s FROM Schedule s WHERE s.user.userId = :userId AND FUNCTION('MONTH', s.date) = :month")
-    Page<Schedule> findAllByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
 }

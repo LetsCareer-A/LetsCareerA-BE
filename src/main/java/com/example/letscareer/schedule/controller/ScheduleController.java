@@ -24,13 +24,8 @@ public class ScheduleController {
             @RequestParam("page") int page,
             @RequestParam("size") int size) {
 
-        try {
             ScheduleResponse scheduleResponse = scheduleService.getSchedules(userId, month, page, size);
             return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, scheduleResponse);
-        } catch (NotFoundException e) {
-            return ErrorResponse.error(ErrorCode.USER_NOT_FOUND_EXCEPTION);
-        } catch (Exception e) {
-            return ErrorResponse.error(ErrorCode.INTERNAL_SERVER_EXCEPTION);
-        }
+
     }
 }
