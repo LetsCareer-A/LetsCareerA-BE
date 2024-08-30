@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 
+import java.util.Date;
+
 @Entity
 @Getter
 @Setter
@@ -28,4 +30,5 @@ public class Schedule {
     private Progress progress;
 
     private String url;
+    private Date date;
 }
