@@ -1,13 +1,18 @@
 package com.example.letscareer.schedule.service;
 
+import com.example.letscareer.always.domain.Always;
+import com.example.letscareer.always.repository.AlwaysRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
+import com.example.letscareer.schedule.domain.Progress;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.dto.StageDTO;
+import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
 import com.example.letscareer.schedule.dto.DateScheduleDTO;
+import com.example.letscareer.stage.domain.Status;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
@@ -30,6 +35,7 @@ public class ScheduleService {
     private final UserRepository userRepository;
     private final StageRepository stageRepository;
     private final ScheduleRepository scheduleRepository;
+    private final AlwaysRepository alwaysRepository;
 
     public ScheduleResponse getSchedules(final Long userId, final int month, final int page, final int size) {
 
@@ -147,6 +153,54 @@ public class ScheduleService {
                 plusCount,
                 schedules
         );
+    }
+
+    public void postSchedule(Long userId,SchedulePostRequest request){
+        Optional<User> userOptional = userRepository.findByUserId(userId);
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+        }
+
+        User user = userOptional.get();
+
+        if (!request.always()){ //schedule 일때
+            Schedule newSchedule = Schedule.builder()
+                    .user(user)
+                    .company(request.company())
+                    .department(request.department())
+                    .url(request.url())
+                    .progress(Progress.DO)
+                    .build();
+            scheduleRepository.save(newSchedule);
+            Stage newStage = Stage.builder()
+                    .schedule(newSchedule)
+                    .type(request.type())
+                    .date(request.date())
+                    .midName(request.midname())
+                    .order(1)
+                    .status(Status.DO)
+                    .build();
+            stageRepository.save(newStage);
+        }else{ //always일때
+            Always newAlways = Always.builder()
+                    .user(user)
+                    .company(request.company())
+                    .department(request.department())
+                    .progress(Progress.DO)
+                    .url(request.url())
+                    .build();
+            alwaysRepository.save(newAlways);
+            Stage newStage = Stage.builder()
+                    .always(newAlways)
+                    .type(request.type())
+                    .date(request.date())
+                    .midName(request.midname())
+                    .order(1)
+                    .status(Status.DO)
+                    .build();
+            stageRepository.save(newStage);
+        }
+
     }
     private int calculateDday(Date deadline) {
         LocalDate deadlineDate = deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();

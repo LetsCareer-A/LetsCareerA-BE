@@ -2,12 +2,14 @@ package com.example.letscareer.schedule.controller;
 
 import com.example.letscareer.common.dto.ApiResponse;
 import com.example.letscareer.common.dto.ErrorResponse;
+import com.example.letscareer.common.dto.SuccessNonDataResponse;
 import com.example.letscareer.common.dto.SuccessResponse;
 import com.example.letscareer.common.exception.enums.ErrorCode;
 import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
+import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.service.ScheduleService;
@@ -45,6 +47,19 @@ public class ScheduleController {
         try{
             DateClickScheduleResponse response = scheduleService.getDateSchedules(userId, date);
             return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, response);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
+
+    @PostMapping
+    public ApiResponse postNewSchedule(
+            @RequestHeader("userId") Long userId,
+            @RequestBody SchedulePostRequest request
+            ){
+        try{
+            scheduleService.postSchedule(userId, request);
+            return SuccessNonDataResponse.success(SuccessCode.SAVE_CAREER_SUCCESS);
         }catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
