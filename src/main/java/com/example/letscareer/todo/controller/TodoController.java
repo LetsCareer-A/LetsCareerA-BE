@@ -54,4 +54,16 @@ public class TodoController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
+    @PatchMapping("/{todoId}")
+    public ApiResponse toggleTodoChecked(
+            @RequestHeader("userId") Long userId,
+            @PathVariable Long todoId
+    ) {
+        try {
+            todoService.changeTodoChecked(userId, todoId);
+            return SuccessNonDataResponse.success(SuccessCode.TODO_TOGGLE_SUCCESS);
+        } catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
 }
