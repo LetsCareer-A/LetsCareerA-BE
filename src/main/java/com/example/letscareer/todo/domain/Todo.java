@@ -23,7 +23,4 @@ public class Todo {
 
     private String content;
     private boolean isChecked; //boolean null 허용 안함
-
-
-
 }
