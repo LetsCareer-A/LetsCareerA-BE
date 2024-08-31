@@ -10,12 +10,14 @@ import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
+import static com.example.letscareer.common.exception.enums.ErrorCode.TODO_NOT_FOUND_EXCEPTION;
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
 
 @Service
@@ -33,15 +35,22 @@ public class TodoService {
         return new TodoResponse(todos);
     }
     public void saveTodo(final Long userId, final TodoRequest request){
-        Optional<User> user = userRepository.findByUserId(userId);
-        if(user.isEmpty()){
-            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
-        }
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
         Todo newTodo = Todo.builder()
                 .content(request.todo())
                 .isChecked(false)
-                .user(user.get())
+                .user(user)
                 .build();
         todoRepository.save(newTodo);
+    }
+    @Transactional
+    public void deleteTodo(final Long userId, final Long todoId){
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        Optional<Todo> todo = todoRepository.findByUserAndTodoId(user, todoId);
+        if(todo.isEmpty()){
+            throw new NotFoundException(TODO_NOT_FOUND_EXCEPTION);
+        }else{
+            todoRepository.deleteByTodoId(todo.get().getTodoId());
+        }
     }
 }

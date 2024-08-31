@@ -42,4 +42,16 @@ public class TodoController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
+    @DeleteMapping("/{todoId}")
+    public ApiResponse deleteTodo(
+            @RequestHeader("userId") Long userId,
+            @PathVariable Long todoId
+    ){
+        try {
+            todoService.deleteTodo(userId, todoId);
+            return SuccessNonDataResponse.success(SuccessCode.TODO_DELETE_SUCCESS);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
 }
