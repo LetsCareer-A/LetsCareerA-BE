@@ -18,12 +18,8 @@ import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_F
 @RequiredArgsConstructor
 public class TodoService {
     private final TodoRepository todoRepository;
-    private final UserRepository userRepository;
     public TodoResponse getTodos(final Long userId) {
-        List<Todo> todoList = todoRepository.findAllByUserId(userId);
-        if (todoList.isEmpty()) {
-            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
-        }
+        List<Todo> todoList = todoRepository.findAllByUserUserId(userId);
 
         List<TodoDTO> todos = todoList.stream()
                 .map(t -> new TodoDTO(t.getContent(), t.isChecked()))
