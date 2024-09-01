@@ -18,12 +18,12 @@ public class AppealCareer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long appealCareerId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stageIdd")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stageId")
     private Stage stage;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "careeId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "careerId")
     private Career career;
 
 }
