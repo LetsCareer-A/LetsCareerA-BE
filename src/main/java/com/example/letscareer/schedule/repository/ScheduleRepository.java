@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     Page<Schedule> findAllByUserUserIdAndAlwaysTrue(Long userId, Pageable pageable);
-
+    Page<Schedule> findAllByUserUserId(Long userId, Pageable pageable);
     Optional<Schedule> findByUserAndScheduleId(User user, Long scheduleId);
+
 }

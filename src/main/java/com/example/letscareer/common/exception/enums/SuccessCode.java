@@ -11,6 +11,7 @@ public enum SuccessCode {
 
     SCHEDULE_SUCCESS(HttpStatus.OK, "일정 찾기 성공입니다."),
     POST_SCHEDULE_SUCCESS(HttpStatus.OK, "새 일정 추가 성공입니다."),
+    FAST_REVIEW_LIST_SUCEESS(HttpStatus.OK, "빠른 회고 리스트 찾기 성공입니다"),
     TODO_SUCCESS(HttpStatus.OK, "투두 찾기 성공입니다."),
     TODO_SAVE_SUCCESS(HttpStatus.OK, "투두 저장 성공입니다"),
     TODO_DELETE_SUCCESS(HttpStatus.OK, "투두 삭제 성공입니다"),
