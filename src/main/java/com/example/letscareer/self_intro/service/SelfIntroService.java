@@ -10,6 +10,7 @@ import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class SelfIntroService {
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public void saveSelfIntro(Long userId, Long scheduleId, Long stageId, SaveSelfIntroRequest request) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
