@@ -1,5 +1,6 @@
 package com.example.letscareer.todo.service;
 
+import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.todo.domain.Todo;
 import com.example.letscareer.todo.dto.TodoDTO;
@@ -17,8 +18,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
-import static com.example.letscareer.common.exception.enums.ErrorCode.TODO_NOT_FOUND_EXCEPTION;
-import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
+import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -52,5 +52,21 @@ public class TodoService {
         }else{
             todoRepository.deleteByTodoId(todo.get().getTodoId());
         }
+    }
+
+    @Transactional
+    public void changeTodoChecked(Long userId, Long todoId) {
+        Todo todo = todoRepository.findById(todoId)
+                .orElseThrow(() -> new NotFoundException(TODO_NOT_FOUND_EXCEPTION));
+
+        // User ID가 일치하는지 확인
+        if (!todo.getUser().getUserId().equals(userId)) {
+            throw new BadRequestException(INVALID_USER_EXCEPTION);
+        }
+
+        // isChecked 필드를 반전
+        todo.setChecked(!todo.isChecked());
+
+        todoRepository.save(todo);
     }
 }

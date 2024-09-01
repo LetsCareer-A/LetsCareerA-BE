@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 
 @Entity
 @Getter
-@Setter
+@Setter //필요
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
