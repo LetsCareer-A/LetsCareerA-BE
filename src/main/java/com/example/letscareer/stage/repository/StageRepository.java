@@ -23,4 +23,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND st.date = :date")
     List<Stage>findAllByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
     Optional<Stage> findTopByScheduleScheduleIdOrderByOrderDesc(Long scheudleId);
+
+    Optional<Stage> findByStageIdAndSchedule(Long stageId, Schedule schedule);
 }
