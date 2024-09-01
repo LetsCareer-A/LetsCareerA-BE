@@ -40,6 +40,7 @@ public class MidReviewService {
                         .freeReview(request.free_review())
                         .goal(request.goal())
                         .stage(stage)
+                        .user(user)
                         .build();
 
         midReviewRepository.save(midReview);

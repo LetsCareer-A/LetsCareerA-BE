@@ -1,6 +1,7 @@
 package com.example.letscareer.int_review.domain;
 
 import com.example.letscareer.stage.domain.Stage;
+import com.example.letscareer.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
@@ -28,4 +29,8 @@ public class IntReview {
     @JoinColumn(name = "stageId")
     @NotNull
     private Stage stage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
+    private User user;
 }
