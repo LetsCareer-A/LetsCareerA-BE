@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
+import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +34,9 @@ public class AppealCareerService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
         Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
         Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
 
         request.careers().forEach(careerId -> {
             careerRepository.findById(careerId).ifPresent(career -> {
