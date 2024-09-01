@@ -4,7 +4,6 @@ import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.int_review.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.domain.MidReview;
 import com.example.letscareer.mid_review.dto.request.PostMidReviewRequest;
-import com.example.letscareer.mid_review.dto.response.FastReviewsResponse;
 import com.example.letscareer.mid_review.repository.MidReviewRepository;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
@@ -17,9 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-
 import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
@@ -28,7 +24,6 @@ public class MidReviewService {
 
     @Autowired
     private final MidReviewRepository midReviewRepository;
-    private final IntReviewRepository intReviewRepository;
     private final ScheduleRepository scheduleRepository;
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
@@ -50,13 +45,5 @@ public class MidReviewService {
                         .build();
 
         midReviewRepository.save(midReview);
-    }
-    public static int calculatePlusDays(LocalDate date) {
-        LocalDate now = LocalDate.now();
-
-        // 현재 날짜와 대상 날짜 간의 차이를 일 단위로 계산
-        long daysBetween = ChronoUnit.DAYS.between(now, date);
-
-        return (int)daysBetween;
     }
 }
