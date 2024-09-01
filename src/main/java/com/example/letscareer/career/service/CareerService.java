@@ -12,6 +12,7 @@ import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class CareerService {
     private final CareerRepository careerRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public void saveCareer(Long userId, SaveCareerRequest request) {
 
         User user = userRepository.findByUserId(userId)
