@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     Page<Stage> findAllByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
 
     @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND st.date = :date")
-    List<Stage>findAllByUserIdAndDate(@Param("userId") Long userId, @Param("date") Date date);
+    List<Stage>findAllByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
     Optional<Stage> findTopByAlwaysAlwaysIdOrderByOrderDesc(Long alwaysId);
 }

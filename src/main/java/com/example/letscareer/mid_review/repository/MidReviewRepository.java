@@ -13,5 +13,5 @@ import java.util.Date;
 @Repository
 public interface MidReviewRepository extends JpaRepository<MidReview, Long> {
     @Query("SELECT mr FROM MidReview mr JOIN mr.stage s WHERE mr.user.userId = :userId AND s.date BETWEEN :startDate AND :endDate")
-    Page<MidReview> findAllByUserIdAndStageDeadlineWithin3Days(Long userId, Date startDate, Date endDate, Pageable pageable);
+    Page<MidReview> findAllByUserIdAndStageDeadlineWithin3Days(Long userId, LocalDate startDate, LocalDate endDate, Pageable pageable);
 }

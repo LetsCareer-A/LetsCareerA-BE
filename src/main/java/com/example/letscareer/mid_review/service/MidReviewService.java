@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -65,17 +66,14 @@ public class MidReviewService {
 
         LocalDate today = LocalDate.now();
         LocalDate threeDaysLater = today.plusDays(4); //3일 뒤까지 포함
-        // LocalDate를 java.util.Date로 변환
-        Date startDate = Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date endDate = Date.from(threeDaysLater.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
 
         // 면접 회고 조회
-        Page<IntReview> intReviews = intReviewRepository.findAllByUserIdAndStageDeadlineWithin3Days(userId, startDate,endDate, pageable);
+        Page<IntReview> intReviews = intReviewRepository.findAllByUserIdAndStageDeadlineWithin3Days(userId, today, threeDaysLater, pageable);
 
         // 중간 회고 조회
-        Page<MidReview> midReviews = midReviewRepository.findAllByUserIdAndStageDeadlineWithin3Days(userId, startDate,endDate,  pageable);
+        Page<MidReview> midReviews = midReviewRepository.findAllByUserIdAndStageDeadlineWithin3Days(userId, today, threeDaysLater,  pageable);
 
         List<FastDTO> fastReviews = new ArrayList<>();
 
@@ -129,6 +127,9 @@ public class MidReviewService {
             }
         });
 
+        // plusDay 값으로 fastReviews 리스트 정렬
+        fastReviews.sort(Comparator.comparingInt(FastDTO::plusDay));
+
         return new FastReviewsResponse(
                 page,
                 size,
@@ -136,14 +137,11 @@ public class MidReviewService {
                 fastReviews
         );
     }
-    public static int calculatePlusDays(Date date) {
+    public static int calculatePlusDays(LocalDate date) {
         LocalDate now = LocalDate.now();
 
-        // 주어진 Date를 LocalDate로 변환
-        LocalDate targetDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
         // 현재 날짜와 대상 날짜 간의 차이를 일 단위로 계산
-        long daysBetween = ChronoUnit.DAYS.between(now, targetDate);
+        long daysBetween = ChronoUnit.DAYS.between(now, date);
 
         return (int)daysBetween;
     }
