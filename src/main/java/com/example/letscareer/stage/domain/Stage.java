@@ -7,6 +7,7 @@ import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.Check;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -34,7 +35,7 @@ public class Stage {
     @Enumerated(EnumType.STRING)
     private Type type;
 
-    private Date date;
+    private LocalDate date;
     private String midName;
 
     @Column(name = "`order`")

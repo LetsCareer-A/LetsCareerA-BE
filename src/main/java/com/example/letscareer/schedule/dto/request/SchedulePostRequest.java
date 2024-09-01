@@ -4,7 +4,7 @@ import com.example.letscareer.stage.domain.Type;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record SchedulePostRequest(
         String company,
@@ -14,7 +14,7 @@ public record SchedulePostRequest(
         Type type,
         String midname,
         Boolean always,
-        Date date,
+        LocalDate date,
         String url
 ) {
 }

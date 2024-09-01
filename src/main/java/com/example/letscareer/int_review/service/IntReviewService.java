@@ -42,6 +42,7 @@ public class IntReviewService {
                         .method(request.details())
                         .questions(request.qa())
                         .feelings(request.feel())
+                        .user(user)
                         .build();
 
         intReviewRepository.save(intReview);
