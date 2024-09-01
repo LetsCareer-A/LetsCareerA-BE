@@ -20,7 +20,8 @@ public enum SuccessCode {
     GET_CAREER_DETAIL_SUCCESS(HttpStatus.OK, "커리어 상세 조회 성공"),
     MID_REVIEW_SAVE_SUCCESS(HttpStatus.CREATED, "중간 전형 회고 추가 성공"),
     INT_REVIEW_SAVE_SUCCESS(HttpStatus.CREATED, "면접 회고 추가 성공"),
-    SELF_INTRO_SAVE_SUCCESS(HttpStatus.CREATED, "자기소개 추가 성공");
+    SELF_INTRO_SAVE_SUCCESS(HttpStatus.CREATED, "자기소개 추가 성공"),
+    APPEAL_CAREERS_ADD_SUCCESS(HttpStatus.CREATED, "어필할 커리어 추가 성공");
 
     private final HttpStatus httpStatus;
     private final String message;
