@@ -4,12 +4,11 @@ import com.example.letscareer.common.dto.ApiResponse;
 import com.example.letscareer.common.dto.ErrorResponse;
 import com.example.letscareer.common.dto.SuccessNonDataResponse;
 import com.example.letscareer.common.dto.SuccessResponse;
-import com.example.letscareer.common.exception.enums.ErrorCode;
 import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.common.exception.model.ValidationException;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
+import com.example.letscareer.schedule.dto.response.AlwaysResponse;
 import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.service.ScheduleService;
@@ -18,7 +17,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,6 +50,19 @@ public class ScheduleController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
+    @GetMapping("/always")
+    public ApiResponse getSchedules(
+            @RequestHeader("userId") Long userId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size) {
+
+        try {
+            AlwaysResponse alwaysResponse = scheduleService.getAlwaysList(userId, page, size);
+            return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, alwaysResponse);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
 
     @PostMapping
     public ApiResponse postNewSchedule(
@@ -60,7 +71,7 @@ public class ScheduleController {
             ){
         try{
             scheduleService.postSchedule(userId, request);
-            return SuccessNonDataResponse.success(SuccessCode.SAVE_CAREER_SUCCESS);
+            return SuccessNonDataResponse.success(SuccessCode.POST_SCHEDULE_SUCCESS);
         }catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }

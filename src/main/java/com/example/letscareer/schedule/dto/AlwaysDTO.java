@@ -1,7 +1,7 @@
-package com.example.letscareer.always.dto;
+package com.example.letscareer.schedule.dto;
 
 public record AlwaysDTO(
-        Long alwaysId,
+        Long scheduleId,
         Long stageId,
         String company,
         String department,

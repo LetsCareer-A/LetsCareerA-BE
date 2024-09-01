@@ -33,18 +33,4 @@ public class MidReviewController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
-
-    @GetMapping("/reviews/fast")
-    public ApiResponse getFastReviewsList(
-            @RequestHeader("userId") Long userId,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size
-    ) {
-        try {
-            FastReviewsResponse fastReviewsResponse = midReviewService.getFastReviews(userId, page, size);
-            return SuccessResponse.success(SuccessCode.MID_REVIEW_SAVE_SUCCESS, fastReviewsResponse);
-        } catch (NotFoundException | BadRequestException e) {
-            return ErrorResponse.error(e.getErrorCode());
-        }
-    }
 }
