@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @RestController
@@ -42,7 +43,7 @@ public class ScheduleController {
     @GetMapping("/date")
     public ApiResponse getDateSchedules(
             @RequestHeader("userId") Long userId,
-            @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+            @RequestParam("date") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date
     ){
         try{
             DateClickScheduleResponse response = scheduleService.getDateSchedules(userId, date);

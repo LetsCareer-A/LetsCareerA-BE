@@ -61,7 +61,7 @@ public class ScheduleService {
                 Long scheduleId = schedule.getScheduleId();
                 Long stageId = stage.getStageId();
                 String type = stage.getType().getValue();
-                Date deadline = stage.getDate();
+                LocalDate deadline = stage.getDate();
 
                 switch (stage.getType()) {
                     case DOC:
@@ -104,7 +104,7 @@ public class ScheduleService {
         );
     }
 
-    public DateClickScheduleResponse getDateSchedules(final Long userId, final Date date) {
+    public DateClickScheduleResponse getDateSchedules(final Long userId, final LocalDate date) {
         // 사용자가 존재하는지 확인
         Optional<User> user = userRepository.findByUserId(userId);
         if (user.isEmpty()) {
@@ -202,11 +202,9 @@ public class ScheduleService {
         }
 
     }
-    private int calculateDday(Date deadline) {
-        LocalDate deadlineDate = deadline.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        int dday = Period.between(LocalDate.now(), deadlineDate).getDays();
+    private int calculateDday(LocalDate deadline) {
+        int dday = Period.between(LocalDate.now(), deadline).getDays();
         return dday;
     }
-
 }
 

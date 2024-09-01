@@ -2,7 +2,7 @@ package com.example.letscareer.schedule.dto;
 
 import com.example.letscareer.schedule.domain.Progress;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record StageDTO(
         Long scheduleId,
@@ -10,7 +10,7 @@ public record StageDTO(
         String company,
         String department,
         String type,
-        Date deadline,
+        LocalDate deadline,
         int dday,
         Progress progress){
 }
