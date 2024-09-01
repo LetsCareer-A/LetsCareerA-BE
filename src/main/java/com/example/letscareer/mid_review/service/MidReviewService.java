@@ -45,12 +45,12 @@ public class MidReviewService {
 
     @Transactional
     public void postMidReview(Long userId, Long scheduleId, Long stageId, PostMidReviewRequest request) {
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findById(stageId)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
 
         MidReview midReview = MidReview.builder()
                         .freeReview(request.free_review())
