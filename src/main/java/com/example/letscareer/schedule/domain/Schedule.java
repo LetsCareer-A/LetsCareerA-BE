@@ -25,6 +25,7 @@ public class Schedule {
 
     private String company;
     private String department;
+    private boolean always; //not null
 
     @Enumerated(EnumType.STRING)
     private Progress progress;
