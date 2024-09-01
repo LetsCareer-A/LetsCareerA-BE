@@ -36,6 +36,8 @@ public class Stage {
 
     private Date date;
     private String midName;
+
+    @Column(name = "`order`")
     private Integer order;
 
     @Enumerated(EnumType.STRING)
