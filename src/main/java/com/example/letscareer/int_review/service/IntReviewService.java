@@ -30,12 +30,12 @@ public class IntReviewService {
 
     @Transactional
     public void postIntReview(Long userId, Long scheduleId, Long stageId, PostIntReviewRequest request) {
-        Schedule schedule = scheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findById(stageId)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
 
         IntReview intReview = IntReview.builder()
                         .stage(stage)
