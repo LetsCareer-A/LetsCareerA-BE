@@ -72,7 +72,7 @@ public class ScheduleController {
 
         try {
             FastReviewListResponse fastReviewListResponse = scheduleService.getFastReviews(userId, page, size);
-            return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, fastReviewListResponse);
+            return SuccessResponse.success(SuccessCode.FAST_REVIEW_LIST_SUCEESS, fastReviewListResponse);
         }catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
