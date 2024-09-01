@@ -16,7 +16,8 @@ public enum SuccessCode {
     TODO_DELETE_SUCCESS(HttpStatus.OK, "투두 삭제 성공입니다"),
     TODO_TOGGLE_SUCCESS(HttpStatus.OK, "투두 토글 변경 성공입니다"),
     SAVE_CAREER_SUCCESS(HttpStatus.CREATED, "커리어 등록 성공"),
-    GET_CAREER_DETAIL_SUCCESS(HttpStatus.OK, "커리어 상세 조회 성공");
+    GET_CAREER_DETAIL_SUCCESS(HttpStatus.OK, "커리어 상세 조회 성공"),
+    MID_REVIEW_SAVE_SUCCESS(HttpStatus.CREATED, "중간 전형 회고 추가 성공");
 
     private final HttpStatus httpStatus;
     private final String message;
