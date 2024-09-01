@@ -1,17 +1,17 @@
 package com.example.letscareer.schedule.service;
 
-import com.example.letscareer.always.domain.Always;
-import com.example.letscareer.always.repository.AlwaysRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.domain.Progress;
 import com.example.letscareer.schedule.domain.Schedule;
+import com.example.letscareer.schedule.dto.AlwaysDTO;
+import com.example.letscareer.schedule.dto.DateScheduleDTO;
 import com.example.letscareer.schedule.dto.StageDTO;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
+import com.example.letscareer.schedule.dto.response.AlwaysResponse;
+import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
-import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
-import com.example.letscareer.schedule.dto.DateScheduleDTO;
 import com.example.letscareer.stage.domain.Status;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
@@ -21,11 +21,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
 
@@ -35,7 +38,6 @@ public class ScheduleService {
     private final UserRepository userRepository;
     private final StageRepository stageRepository;
     private final ScheduleRepository scheduleRepository;
-    private final AlwaysRepository alwaysRepository;
 
     public ScheduleResponse getSchedules(final Long userId, final int month, final int page, final int size) {
 
@@ -154,7 +156,38 @@ public class ScheduleService {
                 schedules
         );
     }
+    public AlwaysResponse getAlwaysList(final Long userId, final int page, final int size) {
+        // 사용자 존재 여부 확인
+        Optional<User> user = userRepository.findByUserId(userId);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+        }
 
+        // 페이지네이션 설정
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        // 사용자 ID, always 조회
+        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserIdAndAlwaysTrue(userId, pageable);
+
+        // 항상 일정 목록을 DTO로 변환
+        List<AlwaysDTO> alwaysList = new ArrayList<>();
+        for (Schedule schedule : schedulePage) {
+            Long scheduleId = schedule.getScheduleId();
+            String company = schedule.getCompany();
+            String department = schedule.getDepartment();
+
+            // 관련된 Stage 정보 가져오기 (최대 order 기준)
+            Optional<Stage> stageOptional = stageRepository.findTopByScheduleScheduleIdOrderByOrderDesc(scheduleId);
+            Long stageId = stageOptional.map(Stage::getStageId).orElse(null);
+            String status = stageOptional.map(Stage::getStatus).get().getValue();
+
+            // DTO로 변환하여 리스트에 추가
+            alwaysList.add(new AlwaysDTO(scheduleId, stageId, company, department, status));
+        }
+
+        return new AlwaysResponse(page, size, alwaysList);
+    }
+    @Transactional
     public void postSchedule(Long userId,SchedulePostRequest request){
         Optional<User> userOptional = userRepository.findByUserId(userId);
         if (userOptional.isEmpty()) {
@@ -168,6 +201,7 @@ public class ScheduleService {
                     .user(user)
                     .company(request.company())
                     .department(request.department())
+                    .always(false)
                     .url(request.url())
                     .progress(Progress.DO)
                     .build();
@@ -182,16 +216,17 @@ public class ScheduleService {
                     .build();
             stageRepository.save(newStage);
         }else{ //always일때
-            Always newAlways = Always.builder()
+            Schedule newSchedule = Schedule.builder()
                     .user(user)
                     .company(request.company())
                     .department(request.department())
-                    .progress(Progress.DO)
                     .url(request.url())
+                    .always(true)
+                    .progress(Progress.DO)
                     .build();
-            alwaysRepository.save(newAlways);
+            scheduleRepository.save(newSchedule);
             Stage newStage = Stage.builder()
-                    .always(newAlways)
+                    .schedule(newSchedule)
                     .type(request.type())
                     .date(request.date())
                     .midName(request.midname())

@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
-
+    Page<Schedule> findAllByUserUserIdAndAlwaysTrue(Long userId, Pageable pageable);
 }
