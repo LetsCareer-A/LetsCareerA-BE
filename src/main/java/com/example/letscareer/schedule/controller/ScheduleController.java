@@ -10,6 +10,7 @@ import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.dto.response.AlwaysResponse;
 import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
+import com.example.letscareer.schedule.dto.response.FastReviewListResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,19 @@ public class ScheduleController {
         try {
             AlwaysResponse alwaysResponse = scheduleService.getAlwaysList(userId, page, size);
             return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, alwaysResponse);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
+    @GetMapping("/reviews/fast")
+    public ApiResponse getFastReviews(
+            @RequestHeader("userId") Long userId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size) {
+
+        try {
+            FastReviewListResponse fastReviewListResponse = scheduleService.getFastReviews(userId, page, size);
+            return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, fastReviewListResponse);
         }catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }

@@ -1,14 +1,18 @@
 package com.example.letscareer.schedule.service;
 
 import com.example.letscareer.common.exception.model.NotFoundException;
+import com.example.letscareer.int_review.repository.IntReviewRepository;
+import com.example.letscareer.mid_review.repository.MidReviewRepository;
 import com.example.letscareer.schedule.domain.Progress;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.dto.AlwaysDTO;
 import com.example.letscareer.schedule.dto.DateScheduleDTO;
+import com.example.letscareer.schedule.dto.FastDTO;
 import com.example.letscareer.schedule.dto.StageDTO;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.dto.response.AlwaysResponse;
 import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
+import com.example.letscareer.schedule.dto.response.FastReviewListResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
@@ -38,6 +42,8 @@ public class ScheduleService {
     private final UserRepository userRepository;
     private final StageRepository stageRepository;
     private final ScheduleRepository scheduleRepository;
+    private final IntReviewRepository intReviewRepository;
+    private final MidReviewRepository midReviewRepository;
 
     public ScheduleResponse getSchedules(final Long userId, final int month, final int page, final int size) {
 
@@ -186,6 +192,47 @@ public class ScheduleService {
         }
 
         return new AlwaysResponse(page, size, alwaysList);
+    }
+    public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size){
+        LocalDate today = LocalDate.now();
+        LocalDate threeDaysLater = today.plusDays(4); // D+3까지 포함
+
+        Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
+
+        // 사용자 ID로 모든 Schedule 조회
+        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
+
+        List<FastDTO> fastReviews = new ArrayList<>();
+
+        int cnt = 0; // D+3까지 회고 없는 stage 개수
+
+        for (Schedule schedule : schedulePage) {
+            // 오늘부터 D+3 사이의 Stage를 조회
+            List<Stage> stages = stageRepository.findAllByScheduleAndDateBetween(schedule, today, threeDaysLater);
+
+            for (Stage stage : stages) {
+                boolean hasIntReview = intReviewRepository.existsByStage(stage);
+                boolean hasMidReview = midReviewRepository.existsByStage(stage);
+
+                if (!hasIntReview && !hasMidReview) {
+                    // 회고가 없는 Stage만 리스트에 추가
+                    cnt++; // 회고 없는 stage 개수 증가
+                    fastReviews.add(new FastDTO(
+                            stage.getStageId(),
+                            schedule.getScheduleId(),
+                            schedule.getCompany(),
+                            schedule.getDepartment()
+                    ));
+                }
+            }
+        }
+
+        return new FastReviewListResponse(
+                page,
+                size,
+                cnt,
+                fastReviews
+        );
     }
     @Transactional
     public void postSchedule(Long userId,SchedulePostRequest request){
