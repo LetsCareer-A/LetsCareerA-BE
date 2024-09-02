@@ -14,4 +14,6 @@ public interface MidReviewRepository extends JpaRepository<MidReview, Long> {
     Boolean existsByStage(Stage stage);
     @Query("SELECT mr.midReviewId FROM MidReview mr WHERE mr.stage = :stage AND mr.user = :user")
     Optional<Long> findMidReviewIdByStageAndUser(Stage stage, User user);
+
+    Optional<MidReview> findByMidReviewIdAndUser(Long midReviewId, User user);
 }
