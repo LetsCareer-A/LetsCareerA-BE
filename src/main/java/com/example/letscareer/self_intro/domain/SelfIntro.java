@@ -24,7 +24,7 @@ public class SelfIntro {
     @Lob
     private String content;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stageId")
     @NotNull
     private Stage stage;

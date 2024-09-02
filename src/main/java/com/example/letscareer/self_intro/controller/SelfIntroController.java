@@ -6,7 +6,7 @@ import com.example.letscareer.common.dto.SuccessNonDataResponse;
 import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.self_intro.dto.SaveSelfIntroRequest;
+import com.example.letscareer.self_intro.dto.request.SaveSelfIntroRequest;
 import com.example.letscareer.self_intro.service.SelfIntroService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

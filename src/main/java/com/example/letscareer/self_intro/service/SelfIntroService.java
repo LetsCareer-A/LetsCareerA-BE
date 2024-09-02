@@ -4,7 +4,8 @@ import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.self_intro.domain.SelfIntro;
-import com.example.letscareer.self_intro.dto.SaveSelfIntroRequest;
+import com.example.letscareer.self_intro.dto.SelfIntroDTO;
+import com.example.letscareer.self_intro.dto.request.SaveSelfIntroRequest;
 import com.example.letscareer.self_intro.repository.SelfIntroRepository;
 import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.stage.repository.StageRepository;
@@ -36,11 +37,14 @@ public class SelfIntroService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
 
-        SelfIntro selfIntro = SelfIntro.builder()
-                        .stage(stage)
-                        .content(request.content())
-                        .build();
-
-        selfIntroRepository.save(selfIntro);
+        for(SelfIntroDTO selfIntroDTO : request.selfIntros()) {
+            SelfIntro selfIntro = SelfIntro.builder()
+                    .title(selfIntroDTO.title())
+                    .sequence(selfIntroDTO.sequence())
+                    .content(selfIntroDTO.content())
+                    .stage(stage)
+                    .build();
+            selfIntroRepository.save(selfIntro);
+        }
     }
 }
