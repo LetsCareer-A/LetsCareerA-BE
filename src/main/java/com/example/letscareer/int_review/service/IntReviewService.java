@@ -3,6 +3,7 @@ package com.example.letscareer.int_review.service;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.int_review.domain.IntReview;
 import com.example.letscareer.int_review.dto.request.PostIntReviewRequest;
+import com.example.letscareer.int_review.dto.response.IntReviewDetailResponse;
 import com.example.letscareer.int_review.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.domain.MidReview;
 import com.example.letscareer.schedule.domain.Schedule;
@@ -27,6 +28,27 @@ public class IntReviewService {
     private final ScheduleRepository scheduleRepository;
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
+
+    public IntReviewDetailResponse getIntReview(Long userId, Long scheduleId, Long stageId, Long intReviewId){
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        IntReview intReview =  intReviewRepository.findByIntReviewIdAndUser(intReviewId, user)
+                .orElseThrow(()-> new NotFoundException(INT_REVIEW_NOT_FOUND_EXCEPTION));
+        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
+        return new IntReviewDetailResponse(
+                schedule.getCompany(),
+                schedule.getDepartment(),
+                stage.getType().getValue(),
+                stage.getDate(),
+                intReview.getMethod(),
+                intReview.getQuestions(),
+                intReview.getFeelings()
+
+        );
+    }
 
     @Transactional
     public void postIntReview(Long userId, Long scheduleId, Long stageId, PostIntReviewRequest request) {
