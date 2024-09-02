@@ -1,10 +1,10 @@
-package com.example.letscareer.mid_review.service;
+package com.example.letscareer.appealCareer.service;
 
+import com.example.letscareer.appealCareer.domain.AppealCareer;
+import com.example.letscareer.appealCareer.dto.request.AddAppealCareersRequest;
+import com.example.letscareer.appealCareer.repository.AppealCareerRepository;
+import com.example.letscareer.career.repository.CareerRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.int_review.repository.IntReviewRepository;
-import com.example.letscareer.mid_review.domain.MidReview;
-import com.example.letscareer.mid_review.dto.request.PostMidReviewRequest;
-import com.example.letscareer.mid_review.repository.MidReviewRepository;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
@@ -20,16 +20,17 @@ import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
-public class MidReviewService {
+public class AppealCareerService {
 
     @Autowired
-    private final MidReviewRepository midReviewRepository;
+    private final AppealCareerRepository appealCareerRepository;
     private final ScheduleRepository scheduleRepository;
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
+    private final CareerRepository careerRepository;
 
     @Transactional
-    public void postMidReview(Long userId, Long scheduleId, Long stageId, PostMidReviewRequest request) {
+    public void addAppealCareer(Long userId, Long scheduleId, Long stageId, AddAppealCareersRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
         Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
@@ -37,13 +38,13 @@ public class MidReviewService {
         Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
                 .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
 
-        MidReview midReview = MidReview.builder()
-                        .freeReview(request.free_review())
-                        .goal(request.goal())
+        request.careers().forEach(careerId -> {
+            careerRepository.findById(careerId).ifPresent(career -> {
+                appealCareerRepository.save(AppealCareer.builder()
+                        .career(career)
                         .stage(stage)
-                        .user(user)
-                        .build();
-
-        midReviewRepository.save(midReview);
+                        .build());
+            });
+        });
     }
 }

@@ -1,6 +1,6 @@
-package com.example.letscareer.always.dto.response;
+package com.example.letscareer.schedule.dto.response;
 
-import com.example.letscareer.always.dto.AlwaysDTO;
+import com.example.letscareer.schedule.dto.AlwaysDTO;
 
 import java.util.List;
 
