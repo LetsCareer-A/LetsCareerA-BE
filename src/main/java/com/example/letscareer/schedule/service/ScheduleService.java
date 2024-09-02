@@ -5,13 +5,13 @@ import com.example.letscareer.always.repository.AlwaysRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.domain.Progress;
 import com.example.letscareer.schedule.domain.Schedule;
+import com.example.letscareer.schedule.dto.DateScheduleDTO;
 import com.example.letscareer.schedule.dto.StageDTO;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
+import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
 import com.example.letscareer.schedule.dto.response.ScheduleResponse;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
-import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
-import com.example.letscareer.schedule.dto.DateScheduleDTO;
 import com.example.letscareer.stage.domain.Status;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
@@ -24,8 +24,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
 
