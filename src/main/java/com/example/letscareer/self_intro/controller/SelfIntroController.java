@@ -17,7 +17,7 @@ public class SelfIntroController {
 
     private final SelfIntroService selfIntroService;
 
-    @PostMapping("/schedules/{scheduleId}/stages/{stageId}/self-intro")
+    @PutMapping("/schedules/{scheduleId}/stages/{stageId}/self-intro")
     public ApiResponse saveSelfIntro(
             @RequestHeader("userId") Long userId,
             @PathVariable Long scheduleId,
