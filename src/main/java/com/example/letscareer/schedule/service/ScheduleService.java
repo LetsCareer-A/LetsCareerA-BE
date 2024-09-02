@@ -7,6 +7,7 @@ import com.example.letscareer.schedule.domain.Progress;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.dto.*;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
+import com.example.letscareer.schedule.dto.request.UpdateScheduleProgressRequest;
 import com.example.letscareer.schedule.dto.response.*;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
@@ -25,6 +26,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 
+import static com.example.letscareer.common.exception.enums.ErrorCode.SCHEDULE_NOT_FOUND_EXCEPTION;
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
 
 @Service
@@ -349,6 +351,19 @@ public class ScheduleService {
         }
 
     }
+
+    @Transactional
+    public void updateScheduleProgress(Long userId, Long scheduleId, UpdateScheduleProgressRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+
+        schedule.setProgress(request.progress());
+        scheduleRepository.save(schedule);
+    }
+
+
     private int calculateDday(LocalDate deadline) {
         int dday = Period.between(LocalDate.now(), deadline).getDays();
         return dday;
