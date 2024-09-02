@@ -8,6 +8,5 @@ public record CompanyReviewListResponse(
         Integer page,
         Integer size,
         List<CompanyReviewDTO> companies
-
 ) {
 }

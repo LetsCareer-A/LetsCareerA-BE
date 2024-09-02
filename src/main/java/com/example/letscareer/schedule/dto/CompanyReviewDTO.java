@@ -5,6 +5,7 @@ import java.util.Map;
 
 public record CompanyReviewDTO(
         String company,
-        Map<String, List<CompanyReviewDetailDTO>> reviewTypes
+        List<CompanyReviewDetailDTO> interviewReviews,  // 면접 리뷰
+        List<CompanyReviewDetailDTO> midtermReviews  // 중간 리뷰
 ) {
 }
