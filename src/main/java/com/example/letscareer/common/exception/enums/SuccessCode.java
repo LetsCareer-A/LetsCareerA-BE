@@ -19,6 +19,7 @@ public enum SuccessCode {
     TODO_TOGGLE_SUCCESS(HttpStatus.OK, "투두 토글 변경 성공입니다"),
     SAVE_CAREER_SUCCESS(HttpStatus.CREATED, "커리어 등록 성공"),
     GET_CAREER_DETAIL_SUCCESS(HttpStatus.OK, "커리어 상세 조회 성공"),
+    MID_REVIEW_GET_SUCCESS(HttpStatus.CREATED, "중간 전형 회고 가져오기 성공"),
     MID_REVIEW_SAVE_SUCCESS(HttpStatus.CREATED, "중간 전형 회고 추가 성공"),
     INT_REVIEW_SAVE_SUCCESS(HttpStatus.CREATED, "면접 회고 추가 성공"),
     SELF_INTRO_SAVE_SUCCESS(HttpStatus.CREATED, "자기소개 추가 성공"),
