@@ -18,7 +18,7 @@ public enum ErrorCode {
     //404
     NOT_FOUND_RESOURCE_EXCEPTION(HttpStatus.NOT_FOUND, "해당 자원을 찾을 수 없습니다."),
     USER_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "해당 유저는 존재하지 않습니다."),
-    KEYWORD_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "해당 키워드는 존재하지 않습니다."),
+    MID_REVIEW_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "해당 중간회고는 존재하지 않습니다."),
     CAREER_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "해당 커리어는 존재하지 않습니다."),
     TODO_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "해당 투두는 존재하지 않습니다"),
     SCHEDULE_NOT_FOUND_EXCEPTION(HttpStatus.NOT_FOUND, "해당 ID의 지원 일정을 찾을 수 없습니다."),
