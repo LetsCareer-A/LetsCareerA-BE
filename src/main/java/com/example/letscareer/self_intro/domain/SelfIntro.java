@@ -17,6 +17,10 @@ public class SelfIntro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long selfIntroId;
 
+    private String title;
+
+    private int sequence;
+
     @Lob
     private String content;
 
