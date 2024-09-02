@@ -1,11 +1,13 @@
 package com.example.letscareer.schedule.domain;
 
+import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,4 +33,7 @@ public class Schedule {
     private Progress progress;
 
     private String url;
+
+    @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Stage> stages;
 }
