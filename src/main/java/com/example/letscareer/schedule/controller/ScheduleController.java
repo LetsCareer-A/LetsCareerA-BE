@@ -8,10 +8,7 @@ import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
-import com.example.letscareer.schedule.dto.response.AlwaysResponse;
-import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
-import com.example.letscareer.schedule.dto.response.FastReviewListResponse;
-import com.example.letscareer.schedule.dto.response.ScheduleResponse;
+import com.example.letscareer.schedule.dto.response.*;
 import com.example.letscareer.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -73,6 +70,19 @@ public class ScheduleController {
         try {
             FastReviewListResponse fastReviewListResponse = scheduleService.getFastReviews(userId, page, size);
             return SuccessResponse.success(SuccessCode.FAST_REVIEW_LIST_SUCEESS, fastReviewListResponse);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
+    @GetMapping("/reviews/company")
+    public ApiResponse getCompanyReviews(
+            @RequestHeader("userId") Long userId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size) {
+
+        try {
+            CompanyReviewListResponse companyReviewListResponse = scheduleService.getCompanyReviewList(userId, page, size);
+            return SuccessResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, companyReviewListResponse);
         }catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }

@@ -5,15 +5,9 @@ import com.example.letscareer.int_review.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.repository.MidReviewRepository;
 import com.example.letscareer.schedule.domain.Progress;
 import com.example.letscareer.schedule.domain.Schedule;
-import com.example.letscareer.schedule.dto.AlwaysDTO;
-import com.example.letscareer.schedule.dto.DateScheduleDTO;
-import com.example.letscareer.schedule.dto.FastDTO;
-import com.example.letscareer.schedule.dto.StageDTO;
+import com.example.letscareer.schedule.dto.*;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
-import com.example.letscareer.schedule.dto.response.AlwaysResponse;
-import com.example.letscareer.schedule.dto.response.DateClickScheduleResponse;
-import com.example.letscareer.schedule.dto.response.FastReviewListResponse;
-import com.example.letscareer.schedule.dto.response.ScheduleResponse;
+import com.example.letscareer.schedule.dto.response.*;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.stage.domain.Status;
@@ -29,10 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
 
@@ -232,6 +223,80 @@ public class ScheduleService {
                 size,
                 cnt,
                 fastReviews
+        );
+    }
+    public CompanyReviewListResponse getCompanyReviewList(final Long userId, final int page, final int size) {
+        Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        // 사용자 ID로 모든 Schedule 조회
+        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
+
+        // 기업별로 리뷰를 분류하기 위한 List
+        List<CompanyReviewDTO> companies = new ArrayList<>();
+
+        // 스케줄을 순회하면서 관련 스테이지와 회고 여부를 확인
+        for (Schedule schedule : schedulePage) {
+            String company = schedule.getCompany();
+
+            // 각 회사별 면접과 중간 리뷰 리스트 초기화
+            List<CompanyReviewDetailDTO> interviewReviews = new ArrayList<>();
+            List<CompanyReviewDetailDTO> midtermReviews = new ArrayList<>();
+
+            // 모든 Stage를 조회
+            List<Stage> stages = stageRepository.findAllBySchedule(schedule);
+
+            for (Stage stage : stages) {
+                String type = stage.getType().getValue(); // Stage의 type 필드
+                boolean isReviewed = false;
+                Long reviewId = null; // 리뷰 ID 초기화
+
+                if (type.equals("면접")) {
+                    // INT 타입의 스테이지인 경우 IntReview만 확인
+                    isReviewed = intReviewRepository.existsByStage(stage);
+                    if (isReviewed) {
+                        reviewId = intReviewRepository.findIntReviewIdByStageAndUser(stage, user).orElse(null); // 리뷰 ID 가져오기
+                    }
+
+                    // 면접 리뷰를 추가
+                    CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
+                            schedule.getScheduleId(),
+                            stage.getStageId(),
+                            reviewId,
+                            schedule.getDepartment(),
+                            stage.getDate(),
+                            isReviewed
+                    );
+                    interviewReviews.add(reviewDetail);
+
+                } else if (type.equals("중간")) {
+                    // MID 타입의 스테이지인 경우 MidReview만 확인
+                    isReviewed = midReviewRepository.existsByStage(stage);
+                    if (isReviewed) {
+                        reviewId = midReviewRepository.findMidReviewIdByStageAndUser(stage, user).orElse(null); // 리뷰 ID 가져오기
+                    }
+
+                    // 중간 리뷰를 추가
+                    CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
+                            schedule.getScheduleId(),
+                            stage.getStageId(),
+                            reviewId,
+                            schedule.getDepartment(),
+                            stage.getDate(),
+                            isReviewed
+                    );
+                    midtermReviews.add(reviewDetail);
+                }
+            }
+
+            // 기업별 리뷰 DTO 추가
+            companies.add(new CompanyReviewDTO(company, interviewReviews, midtermReviews));
+        }
+
+        return new CompanyReviewListResponse(
+                page,
+                size,
+                companies
         );
     }
     @Transactional
