@@ -75,4 +75,17 @@ public class StageController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
+
+    @GetMapping("/schedules/{scheduleId}/stages/{stageId}/mid")
+    public ApiResponse getMidStage(
+            @RequestHeader("userId") Long userId,
+            @PathVariable Long scheduleId,
+            @PathVariable Long stageId
+    ) {
+        try {
+            return SuccessResponse.success(SuccessCode.MID_STAGES_GET_SUCCESS , stageService.getMidStage(userId, scheduleId, stageId));
+        } catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
 }

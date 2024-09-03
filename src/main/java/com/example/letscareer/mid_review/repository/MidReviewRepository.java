@@ -16,4 +16,6 @@ public interface MidReviewRepository extends JpaRepository<MidReview, Long> {
     Optional<Long> findMidReviewIdByStageAndUser(Stage stage, User user);
 
     Optional<MidReview> findByMidReviewIdAndUser(Long midReviewId, User user);
+
+    Optional<MidReview> findByStage(Stage stage);
 }
