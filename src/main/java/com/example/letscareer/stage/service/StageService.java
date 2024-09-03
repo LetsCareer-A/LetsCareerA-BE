@@ -3,6 +3,8 @@ package com.example.letscareer.stage.service;
 import com.example.letscareer.appealCareer.domain.AppealCareer;
 import com.example.letscareer.appealCareer.repository.AppealCareerRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
+import com.example.letscareer.int_review.domain.IntReview;
+import com.example.letscareer.int_review.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.domain.MidReview;
 import com.example.letscareer.mid_review.repository.MidReviewRepository;
 import com.example.letscareer.schedule.domain.Schedule;
@@ -14,14 +16,12 @@ import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.stage.domain.Status;
 import com.example.letscareer.stage.domain.Type;
 import com.example.letscareer.stage.dto.AppealCareerDTO;
-import com.example.letscareer.stage.dto.ReviewDTO;
+import com.example.letscareer.stage.dto.IntReviewDTO;
+import com.example.letscareer.stage.dto.MidReviewDTO;
 import com.example.letscareer.stage.dto.StageDTO;
 import com.example.letscareer.stage.dto.request.AddStageRequest;
 import com.example.letscareer.stage.dto.request.UpdateStageStatusRequest;
-import com.example.letscareer.stage.dto.response.AddStageResponse;
-import com.example.letscareer.stage.dto.response.GetDocumentStageResponse;
-import com.example.letscareer.stage.dto.response.GetMidStageResponse;
-import com.example.letscareer.stage.dto.response.GetStagesResponse;
+import com.example.letscareer.stage.dto.response.*;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.repository.UserRepository;
@@ -49,6 +49,7 @@ public class StageService {
     private final SelfIntroRepository selfIntroRepository;
     private final AppealCareerRepository appealCareerRepository;
     private final MidReviewRepository midReviewRepository;
+    private final IntReviewRepository intReviewRepository;
 
     @Transactional
     public AddStageResponse addStage(Long userId, Long scheduleId, AddStageRequest request) {
@@ -154,17 +155,13 @@ public class StageService {
             );
         }
 
-        List<AppealCareer> appealCareers = appealCareerRepository.findByStage(stage);
-        List<AppealCareerDTO> appealCareerDTOs = new ArrayList<>();
-        for(AppealCareer appealCareer : appealCareers) {
-            appealCareerDTOs.add(
-                    new AppealCareerDTO(
-                            appealCareer.getCareer().getCareerId(),
-                            appealCareer.getCareer().getCategory().getValue(),
-                            appealCareer.getCareer().getTitle()
-                    )
-            );
-        }
+        List<AppealCareerDTO> appealCareerDTOs = appealCareerRepository.findByStage(stage).stream()
+                .map(appealCareer -> new AppealCareerDTO(
+                        appealCareer.getCareer().getCareerId(),
+                        appealCareer.getCareer().getCategory().getValue(),
+                        appealCareer.getCareer().getTitle()
+                ))
+                .toList();
 
         return new GetDocumentStageResponse(
                 stage.getStageId(),
@@ -191,15 +188,45 @@ public class StageService {
             );
         }
         else {
-            ReviewDTO reviewDTO = new ReviewDTO(
+            MidReviewDTO midReviewDTO = new MidReviewDTO(
                     midReview.get().getMidReviewId(),
                     midReview.get().getFreeReview(),
                     midReview.get().getGoal()
             );
             return new GetMidStageResponse(
                     false,
-                    reviewDTO
+                    midReviewDTO
             );
         }
+    }
+
+    public GetInterviewStageResponse getInterviewStage(Long userId, Long scheduleId, Long stageId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+        Stage stage = stageRepository.findByScheduleAndStageIdAndType(schedule, stageId, Type.INT)
+                .orElseThrow(() -> new NotFoundException(INT_STAGE_NOT_FOUND_EXCEPTION));
+
+        List<AppealCareerDTO> appealCareerDTOs = appealCareerRepository.findByStage(stage).stream()
+                .map(appealCareer -> new AppealCareerDTO(
+                        appealCareer.getCareer().getCareerId(),
+                        appealCareer.getCareer().getCategory().getValue(),
+                        appealCareer.getCareer().getTitle()
+                ))
+                .toList();
+
+        Optional<IntReview> intReview = intReviewRepository.findByStage(stage);
+
+        return new GetInterviewStageResponse(
+                intReview.isPresent(),
+                intReview.map(ir -> new IntReviewDTO(
+                        ir.getIntReviewId(),
+                        ir.getMethod(),
+                        ir.getQuestions(),
+                        ir.getFeelings()
+                )).orElse(null),
+                appealCareerDTOs
+        );
     }
 }

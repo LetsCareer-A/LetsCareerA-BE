@@ -15,4 +15,6 @@ public interface IntReviewRepository extends JpaRepository<IntReview, Long> {
     @Query("SELECT ir.intReviewId FROM IntReview ir WHERE ir.stage = :stage AND ir.user = :user")
     Optional<Long> findIntReviewIdByStageAndUser(Stage stage, User user);
     Optional<IntReview> findByIntReviewIdAndUser(Long intReviewId, User user);
+
+    Optional<IntReview> findByStage(Stage stage);
 }

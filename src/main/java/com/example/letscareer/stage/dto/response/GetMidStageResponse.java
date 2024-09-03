@@ -1,9 +1,9 @@
 package com.example.letscareer.stage.dto.response;
 
-import com.example.letscareer.stage.dto.ReviewDTO;
+import com.example.letscareer.stage.dto.MidReviewDTO;
 
 public record GetMidStageResponse(
         boolean reviewAvailable,
-        ReviewDTO review
+        MidReviewDTO review
 ) {
 }

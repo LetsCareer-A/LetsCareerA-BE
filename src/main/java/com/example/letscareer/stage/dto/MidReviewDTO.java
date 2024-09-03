@@ -1,8 +1,6 @@
 package com.example.letscareer.stage.dto;
 
-import java.time.LocalDate;
-
-public record ReviewDTO(
+public record MidReviewDTO(
         Long reviewId,
         String free_review,
         String goal

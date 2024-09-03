@@ -30,7 +30,8 @@ public enum SuccessCode {
     UPDATE_SCHEDULE_PROGRESS_SUCCESS(HttpStatus.OK, "일정 진행 상태 변경 성공"),
     STAGES_GET_SUCCESS(HttpStatus.OK, "지원 일정 및 단계 조회 성공"),
     DOC_STAGES_GET_SUCCESS(HttpStatus.OK, "서류전형 단계 조회 성공"),
-    MID_STAGES_GET_SUCCESS(HttpStatus.OK, "중간전형 단계 조회 성공"),;
+    MID_STAGES_GET_SUCCESS(HttpStatus.OK, "중간전형 단계 조회 성공"),
+    INT_STAGES_GET_SUCCESS(HttpStatus.OK, "면접전형 단계 조회 성공"),;
 
     private final HttpStatus httpStatus;
     private final String message;
