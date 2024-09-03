@@ -17,10 +17,14 @@ public class SelfIntro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long selfIntroId;
 
+    private String title;
+
+    private int sequence;
+
     @Lob
     private String content;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stageId")
     @NotNull
     private Stage stage;

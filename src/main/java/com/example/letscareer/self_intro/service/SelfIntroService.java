@@ -4,7 +4,8 @@ import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
 import com.example.letscareer.self_intro.domain.SelfIntro;
-import com.example.letscareer.self_intro.dto.SaveSelfIntroRequest;
+import com.example.letscareer.self_intro.dto.SelfIntroDTO;
+import com.example.letscareer.self_intro.dto.request.SaveSelfIntroRequest;
 import com.example.letscareer.self_intro.repository.SelfIntroRepository;
 import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.stage.repository.StageRepository;
@@ -14,7 +15,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
@@ -36,11 +36,18 @@ public class SelfIntroService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
 
-        SelfIntro selfIntro = SelfIntro.builder()
-                        .stage(stage)
-                        .content(request.content())
-                        .build();
+        // 현재 stage에 있는 모든 SelfIntro를 삭제한다.
+        selfIntroRepository.deleteByStage(stage);
 
-        selfIntroRepository.save(selfIntro);
+        // 새로 들어온 자기소개서 항목을 저장한다.
+        for (SelfIntroDTO selfIntroDTO : request.selfIntros()) {
+            SelfIntro selfIntro = SelfIntro.builder()
+                    .title(selfIntroDTO.title())
+                    .sequence(selfIntroDTO.sequence())
+                    .content(selfIntroDTO.content())
+                    .stage(stage)
+                    .build();
+            selfIntroRepository.save(selfIntro);
+        }
     }
 }
