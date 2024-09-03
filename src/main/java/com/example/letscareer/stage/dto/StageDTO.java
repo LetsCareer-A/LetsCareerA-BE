@@ -1,6 +1,5 @@
 package com.example.letscareer.stage.dto;
 
-import java.time.LocalDate;
 
 public record StageDTO(
         Long stageId,
@@ -8,7 +7,7 @@ public record StageDTO(
         String type,
         String mid_name,
         String status,
-        LocalDate date,
-        int dday
+        String date,
+        String dday
 ) {
 }

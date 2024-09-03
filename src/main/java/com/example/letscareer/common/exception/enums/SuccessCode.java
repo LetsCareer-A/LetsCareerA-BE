@@ -27,7 +27,8 @@ public enum SuccessCode {
     APPEAL_CAREERS_ADD_SUCCESS(HttpStatus.CREATED, "어필할 커리어 추가 성공"),
     STAGE_ADD_SUCCESS(HttpStatus.CREATED, "전형 단계 추가 성공"),
     STAGE_UPDATE_SUCCESS(HttpStatus.OK, "전형 단계 상태 변경 성공"),
-    UPDATE_SCHEDULE_PROGRESS_SUCCESS(HttpStatus.OK, "일정 진행 상태 변경 성공"),;
+    UPDATE_SCHEDULE_PROGRESS_SUCCESS(HttpStatus.OK, "일정 진행 상태 변경 성공"),
+    STAGES_GET_SUCCESS(HttpStatus.OK, "지원 일정 및 단계 조회 성공"),;
 
     private final HttpStatus httpStatus;
     private final String message;

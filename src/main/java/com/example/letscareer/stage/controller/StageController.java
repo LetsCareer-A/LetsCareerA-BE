@@ -57,7 +57,7 @@ public class StageController {
             @PathVariable Long scheduleId
     ) {
         try {
-            return SuccessResponse.success(SuccessCode.STAGE_ADD_SUCCESS, stageService.getStages(userId, scheduleId));
+            return SuccessResponse.success(SuccessCode.STAGES_GET_SUCCESS , stageService.getStages(userId, scheduleId));
         } catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }

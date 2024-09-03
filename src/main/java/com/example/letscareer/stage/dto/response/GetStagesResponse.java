@@ -10,6 +10,7 @@ public record GetStagesResponse(
         String department,
         String url,
         String progress,
+        boolean isAlways,
         List<StageDTO> stages
 ) {
 }

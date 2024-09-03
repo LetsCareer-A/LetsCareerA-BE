@@ -59,7 +59,7 @@ public class StageService {
         return new AddStageResponse(
                 stage.getStageId(),
                 stage.getType().getValue(),
-                stage.getMidName(),
+                stage.getType().equals(Type.MID) ? stage.getMidName() : "",
                 stage.getStatus().getValue(),
                 stage.getDate(),
                 dday);
@@ -95,7 +95,7 @@ public class StageService {
 
         for(Stage stage : stages) {
             // D-day 계산
-            Integer dday = (stage.getDate() != null) ? calculateDday(stage.getDate()) : null;
+            String dday = (!schedule.isAlways()) ? String.valueOf(calculateDday(stage.getDate())) : "";
             stageDTOs.add(
                     new StageDTO(
                             stage.getStageId(),
@@ -103,7 +103,7 @@ public class StageService {
                             stage.getType().getValue(),
                             stage.getType().equals(Type.MID) ? stage.getMidName() : "",
                             stage.getStatus().getValue(),
-                            stage.getDate(),
+                            schedule.isAlways() ? "" : stage.getDate().toString(),
                             dday
                     )
             );
@@ -115,6 +115,7 @@ public class StageService {
                 schedule.getDepartment(),
                 schedule.getUrl(),
                 schedule.getProgress().getValue(),
+                schedule.isAlways(),
                 stageDTOs);
     }
 }
