@@ -219,7 +219,7 @@ public class StageService {
         Optional<IntReview> intReview = intReviewRepository.findByStage(stage);
 
         return new GetInterviewStageResponse(
-                intReview.isPresent(),
+                !intReview.isPresent(),
                 intReview.map(ir -> new IntReviewDTO(
                         ir.getIntReviewId(),
                         ir.getMethod(),
