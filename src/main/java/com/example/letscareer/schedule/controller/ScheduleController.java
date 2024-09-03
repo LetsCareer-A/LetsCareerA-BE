@@ -8,6 +8,7 @@ import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.dto.request.SchedulePostRequest;
+import com.example.letscareer.schedule.dto.request.UpdateScheduleProgressRequest;
 import com.example.letscareer.schedule.dto.response.*;
 import com.example.letscareer.schedule.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
@@ -96,6 +97,20 @@ public class ScheduleController {
         try{
             scheduleService.postSchedule(userId, request);
             return SuccessNonDataResponse.success(SuccessCode.POST_SCHEDULE_SUCCESS);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
+
+    @PutMapping("/{scheduleId}/progress")
+    public ApiResponse updateScheduleProgress(
+            @RequestHeader("userId") Long userId,
+            @PathVariable Long scheduleId,
+            @RequestBody UpdateScheduleProgressRequest request
+    ){
+        try{
+            scheduleService.updateScheduleProgress(userId, scheduleId, request);
+            return SuccessNonDataResponse.success(SuccessCode.UPDATE_SCHEDULE_PROGRESS_SUCCESS);
         }catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
