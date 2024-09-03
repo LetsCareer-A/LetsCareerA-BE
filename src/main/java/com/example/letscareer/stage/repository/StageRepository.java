@@ -2,6 +2,8 @@ package com.example.letscareer.stage.repository;
 
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.stage.domain.Stage;
+import com.example.letscareer.stage.domain.Type;
+import com.example.letscareer.user.domain.User;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,4 +30,6 @@ public interface StageRepository extends JpaRepository<Stage, Long> {
     List<Stage> findAllBySchedule(Schedule schedule);
 
     List<Stage> findBySchedule(Schedule schedule);
+
+    Optional<Stage> findByScheduleAndStageIdAndType(Schedule schedule, Long stageId, Type type);
 }

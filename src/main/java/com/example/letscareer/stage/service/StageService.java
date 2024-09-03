@@ -1,15 +1,22 @@
 package com.example.letscareer.stage.service;
 
+import com.example.letscareer.appealCareer.domain.AppealCareer;
+import com.example.letscareer.appealCareer.repository.AppealCareerRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.schedule.domain.Schedule;
 import com.example.letscareer.schedule.repository.ScheduleRepository;
+import com.example.letscareer.self_intro.domain.SelfIntro;
+import com.example.letscareer.self_intro.dto.SelfIntroDTO;
+import com.example.letscareer.self_intro.repository.SelfIntroRepository;
 import com.example.letscareer.stage.domain.Stage;
 import com.example.letscareer.stage.domain.Status;
 import com.example.letscareer.stage.domain.Type;
+import com.example.letscareer.stage.dto.AppealCareerDTO;
 import com.example.letscareer.stage.dto.StageDTO;
 import com.example.letscareer.stage.dto.request.AddStageRequest;
 import com.example.letscareer.stage.dto.request.UpdateStageStatusRequest;
 import com.example.letscareer.stage.dto.response.AddStageResponse;
+import com.example.letscareer.stage.dto.response.GetDocumentStageResponse;
 import com.example.letscareer.stage.dto.response.GetStagesResponse;
 import com.example.letscareer.stage.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
@@ -34,6 +41,8 @@ public class StageService {
     private final StageRepository stageRepository;
     private final ScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final SelfIntroRepository selfIntroRepository;
+    private final AppealCareerRepository appealCareerRepository;
 
     @Transactional
     public AddStageResponse addStage(Long userId, Long scheduleId, AddStageRequest request) {
@@ -117,5 +126,45 @@ public class StageService {
                 schedule.getProgress().getValue(),
                 schedule.isAlways(),
                 stageDTOs);
+    }
+
+    public GetDocumentStageResponse getDocumentStage(Long userId, Long scheduleId, Long stageId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+        Stage stage = stageRepository.findByScheduleAndStageIdAndType(schedule, stageId, Type.DOC)
+                .orElseThrow(() -> new NotFoundException(DOC_STAGE_NOT_FOUND_EXCEPTION));
+
+        List<SelfIntro> selfIntros = selfIntroRepository.findByStage(stage);
+        List<SelfIntroDTO> selfIntroDTOs = new ArrayList<>();
+        for(SelfIntro selfIntro : selfIntros) {
+            selfIntroDTOs.add(
+                    new SelfIntroDTO(
+                            selfIntro.getTitle(),
+                            selfIntro.getSequence(),
+                            selfIntro.getContent()
+                    )
+            );
+        }
+
+        List<AppealCareer> appealCareers = appealCareerRepository.findByStage(stage);
+        List<AppealCareerDTO> appealCareerDTOs = new ArrayList<>();
+        for(AppealCareer appealCareer : appealCareers) {
+            appealCareerDTOs.add(
+                    new AppealCareerDTO(
+                            appealCareer.getCareer().getCareerId(),
+                            appealCareer.getCareer().getCategory().getValue(),
+                            appealCareer.getCareer().getTitle()
+                    )
+            );
+        }
+
+        return new GetDocumentStageResponse(
+                stage.getStageId(),
+                stage.getType().getValue(),
+                selfIntroDTOs,
+                appealCareerDTOs
+        );
     }
 }
