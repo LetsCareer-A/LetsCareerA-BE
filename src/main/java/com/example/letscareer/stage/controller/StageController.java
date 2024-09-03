@@ -50,4 +50,16 @@ public class StageController {
             return ErrorResponse.error(e.getErrorCode());
         }
     }
+
+    @GetMapping("/schedules/{scheduleId}/stages")
+    public ApiResponse getStages(
+            @RequestHeader("userId") Long userId,
+            @PathVariable Long scheduleId
+    ) {
+        try {
+            return SuccessResponse.success(SuccessCode.STAGES_GET_SUCCESS , stageService.getStages(userId, scheduleId));
+        } catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
 }
