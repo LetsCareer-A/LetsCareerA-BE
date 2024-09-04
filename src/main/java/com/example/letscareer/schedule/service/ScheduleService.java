@@ -7,7 +7,6 @@ import com.example.letscareer.schedule.domain.model.Progress;
 import com.example.letscareer.schedule.domain.model.Schedule;
 import com.example.letscareer.schedule.domain.dto.*;
 import com.example.letscareer.schedule.domain.dto.response.*;
-import com.example.letscareer.schedule.dto.*;
 import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.domain.dto.request.UpdateScheduleProgressRequest;
 import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
