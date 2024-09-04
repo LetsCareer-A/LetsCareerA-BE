@@ -1,6 +1,6 @@
 package com.example.letscareer.career.controller;
 
-import com.example.letscareer.career.dto.request.SaveCareerRequest;
+import com.example.letscareer.career.domain.dto.request.SaveCareerRequest;
 import com.example.letscareer.career.service.CareerService;
 import com.example.letscareer.common.dto.ApiResponse;
 import com.example.letscareer.common.dto.ErrorResponse;
@@ -10,7 +10,7 @@ import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
-import com.example.letscareer.user.repository.UserRepository;
+import com.example.letscareer.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

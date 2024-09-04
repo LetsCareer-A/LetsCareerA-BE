@@ -1,6 +1,6 @@
 package com.example.letscareer.appealCareer.controller;
 
-import com.example.letscareer.appealCareer.dto.request.AddAppealCareersRequest;
+import com.example.letscareer.appealCareer.domain.dto.request.AddAppealCareersRequest;
 import com.example.letscareer.appealCareer.service.AppealCareerService;
 import com.example.letscareer.common.dto.ApiResponse;
 import com.example.letscareer.common.dto.ErrorResponse;

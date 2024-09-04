@@ -7,11 +7,9 @@ import com.example.letscareer.common.dto.SuccessResponse;
 import com.example.letscareer.common.exception.enums.SuccessCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.int_review.dto.request.PostIntReviewRequest;
-import com.example.letscareer.int_review.dto.response.IntReviewDetailResponse;
+import com.example.letscareer.int_review.domain.dto.request.PostIntReviewRequest;
+import com.example.letscareer.int_review.domain.dto.response.IntReviewDetailResponse;
 import com.example.letscareer.int_review.service.IntReviewService;
-import com.example.letscareer.mid_review.dto.request.PostMidReviewRequest;
-import com.example.letscareer.mid_review.dto.response.MidReviewDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

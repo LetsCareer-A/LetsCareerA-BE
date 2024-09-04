@@ -1,17 +1,17 @@
 package com.example.letscareer.career.service;
 
-import com.example.letscareer.career.domain.Career;
-import com.example.letscareer.career.dto.CareerDTO;
-import com.example.letscareer.career.dto.request.SaveCareerRequest;
-import com.example.letscareer.career.dto.response.GetCareerDetailResponse;
-import com.example.letscareer.career.dto.response.GetCareersResponse;
-import com.example.letscareer.career.repository.CareerRepository;
+import com.example.letscareer.career.domain.model.Career;
+import com.example.letscareer.career.domain.dto.CareerDTO;
+import com.example.letscareer.career.domain.dto.request.SaveCareerRequest;
+import com.example.letscareer.career.domain.dto.response.GetCareerDetailResponse;
+import com.example.letscareer.career.domain.dto.response.GetCareersResponse;
+import com.example.letscareer.career.domain.repository.CareerRepository;
 import com.example.letscareer.common.exception.enums.ErrorCode;
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
 import com.example.letscareer.user.domain.User;
-import com.example.letscareer.user.repository.UserRepository;
+import com.example.letscareer.user.domain.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

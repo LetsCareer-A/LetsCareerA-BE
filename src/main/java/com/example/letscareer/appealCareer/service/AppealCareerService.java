@@ -1,16 +1,16 @@
 package com.example.letscareer.appealCareer.service;
 
-import com.example.letscareer.appealCareer.domain.AppealCareer;
-import com.example.letscareer.appealCareer.dto.request.AddAppealCareersRequest;
-import com.example.letscareer.appealCareer.repository.AppealCareerRepository;
-import com.example.letscareer.career.repository.CareerRepository;
+import com.example.letscareer.appealCareer.domain.model.AppealCareer;
+import com.example.letscareer.appealCareer.domain.dto.request.AddAppealCareersRequest;
+import com.example.letscareer.appealCareer.domain.repository.AppealCareerRepository;
+import com.example.letscareer.career.domain.repository.CareerRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.schedule.domain.Schedule;
-import com.example.letscareer.schedule.repository.ScheduleRepository;
-import com.example.letscareer.stage.domain.Stage;
-import com.example.letscareer.stage.repository.StageRepository;
+import com.example.letscareer.schedule.domain.model.Schedule;
+import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
+import com.example.letscareer.stage.domain.model.Stage;
+import com.example.letscareer.stage.domain.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
-import com.example.letscareer.user.repository.UserRepository;
+import com.example.letscareer.user.domain.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

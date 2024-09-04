@@ -2,20 +2,19 @@ package com.example.letscareer.todo.service;
 
 import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.todo.domain.Todo;
-import com.example.letscareer.todo.dto.TodoDTO;
-import com.example.letscareer.todo.dto.request.TodoRequest;
-import com.example.letscareer.todo.dto.response.TodoResponse;
-import com.example.letscareer.todo.repository.TodoRepository;
+import com.example.letscareer.todo.domain.model.Todo;
+import com.example.letscareer.todo.domain.dto.TodoDTO;
+import com.example.letscareer.todo.domain.dto.request.TodoRequest;
+import com.example.letscareer.todo.domain.dto.response.TodoResponse;
+import com.example.letscareer.todo.domain.repository.TodoRepository;
 import com.example.letscareer.user.domain.User;
-import com.example.letscareer.user.repository.UserRepository;
+import com.example.letscareer.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.*;
