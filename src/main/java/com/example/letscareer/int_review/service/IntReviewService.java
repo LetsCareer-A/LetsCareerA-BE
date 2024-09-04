@@ -1,17 +1,16 @@
 package com.example.letscareer.int_review.service;
 
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.int_review.domain.IntReview;
-import com.example.letscareer.int_review.dto.request.PostIntReviewRequest;
-import com.example.letscareer.int_review.dto.response.IntReviewDetailResponse;
-import com.example.letscareer.int_review.repository.IntReviewRepository;
-import com.example.letscareer.mid_review.domain.MidReview;
-import com.example.letscareer.schedule.domain.Schedule;
-import com.example.letscareer.schedule.repository.ScheduleRepository;
-import com.example.letscareer.stage.domain.Stage;
-import com.example.letscareer.stage.repository.StageRepository;
+import com.example.letscareer.int_review.domain.model.IntReview;
+import com.example.letscareer.int_review.domain.dto.request.PostIntReviewRequest;
+import com.example.letscareer.int_review.domain.dto.response.IntReviewDetailResponse;
+import com.example.letscareer.int_review.domain.repository.IntReviewRepository;
+import com.example.letscareer.schedule.domain.model.Schedule;
+import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
+import com.example.letscareer.stage.domain.model.Stage;
+import com.example.letscareer.stage.domain.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
-import com.example.letscareer.user.repository.UserRepository;
+import com.example.letscareer.user.domain.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
