@@ -49,7 +49,16 @@ public class CareerController {
                                   @RequestParam(value = "page", defaultValue = "1") int page,
                                   @RequestParam(value = "size", defaultValue = "15") int size) {
         try {
-            return SuccessResponse.success(SuccessCode.GET_CAREER_DETAIL_SUCCESS, careerService.getCareers(userId, page, size));
+            return SuccessResponse.success(SuccessCode.GET_CAREER_SUCCESS, careerService.getCareers(userId, page, size));
+        } catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
+    }
+
+    @GetMapping("/all")
+    public ApiResponse getAllCareers(@RequestHeader("userId") Long userId) {
+        try {
+            return SuccessResponse.success(SuccessCode.GET_ALL_CAREERS_SUCCESS, careerService.getAllCareers(userId));
         } catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }

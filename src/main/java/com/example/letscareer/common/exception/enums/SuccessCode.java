@@ -31,7 +31,9 @@ public enum SuccessCode {
     STAGES_GET_SUCCESS(HttpStatus.OK, "지원 일정 및 단계 조회 성공"),
     DOC_STAGES_GET_SUCCESS(HttpStatus.OK, "서류전형 단계 조회 성공"),
     MID_STAGES_GET_SUCCESS(HttpStatus.OK, "중간전형 단계 조회 성공"),
-    INT_STAGES_GET_SUCCESS(HttpStatus.OK, "면접전형 단계 조회 성공"),;
+    INT_STAGES_GET_SUCCESS(HttpStatus.OK, "면접전형 단계 조회 성공"),
+    GET_ALL_CAREERS_SUCCESS(HttpStatus.OK, "커리어 전체 조회 성공"),
+    GET_CAREER_SUCCESS(HttpStatus.OK, "커리어 조회 성공"),;
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -1,5 +1,6 @@
 package com.example.letscareer.career.service;
 
+import com.example.letscareer.career.domain.dto.response.GetAllCareersResponse;
 import com.example.letscareer.career.domain.model.Career;
 import com.example.letscareer.career.domain.dto.CareerDTO;
 import com.example.letscareer.career.domain.dto.request.SaveCareerRequest;
@@ -15,6 +16,7 @@ import com.example.letscareer.user.domain.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -97,6 +99,25 @@ public class CareerService {
                 careers.getTotalPages(),
                 careerDTOS
         );
+    }
+
+    @Cacheable(value = "allCareersCache", key = "#userId", unless = "#result == null || #result.careers.size() == 0")
+    public GetAllCareersResponse getAllCareers(Long userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
+
+        List<Career> careers = careerRepository.findByUser(user);
+
+        List<CareerDTO> careerDTOS = careers.stream()
+                .map(career -> new CareerDTO(
+                        career.getCareerId(),
+                        career.getCategory().getValue(),
+                        career.getTitle(),
+                        toSummary(career.getSituation())
+                ))
+                .collect(Collectors.toList());
+
+        return new GetAllCareersResponse(careerDTOS);
     }
 
     private String toSummary(String content) {
