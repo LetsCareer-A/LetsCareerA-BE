@@ -43,21 +43,8 @@ public class CareerService {
             throw new ValidationException(ErrorCode.CAREER_TITLE_IS_EMPTY);
         }
 
-        try {
-            Career career = Career.builder()
-                    .user(user)
-                    .category(request.category())
-                    .title(request.title())
-                    .situation(request.situation())
-                    .task(request.task())
-                    .action(request.action())
-                    .result(request.result())
-                    .build();
-
-            careerRepository.save(career);
-        } catch (Exception e) {
-            throw new BadRequestException(ErrorCode.INTERNAL_SERVER_EXCEPTION);
-        }
+        Career career = Career.of(user, request);
+        careerRepository.save(career);
     }
 
     public GetCareerDetailResponse getCareerDetail(Long userId, Long careerId) {
