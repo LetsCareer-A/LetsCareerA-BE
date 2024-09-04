@@ -35,7 +35,6 @@ public class CareerService {
 
     @Transactional
     public void saveCareer(Long userId, SaveCareerRequest request) {
-
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
 
@@ -54,15 +53,7 @@ public class CareerService {
         Career career = careerRepository.findByCareerIdAndUser(careerId, user)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.CAREER_NOT_FOUND_EXCEPTION));
 
-        return new GetCareerDetailResponse(
-                career.getCareerId(),
-                career.getCategory().getValue(),
-                career.getTitle(),
-                career.getSituation(),
-                career.getTask(),
-                career.getAction(),
-                career.getResult()
-        );
+        return GetCareerDetailResponse.from(career);
     }
 
     public GetCareersResponse getCareers(Long userId, int page, int size) {
