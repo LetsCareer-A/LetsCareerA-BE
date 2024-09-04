@@ -7,11 +7,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CareerRepository extends JpaRepository<Career, Long> {
-    public Optional<Career> findByCareerIdAndUser(Long careerId, User user);
+    Optional<Career> findByCareerIdAndUser(Long careerId, User user);
 
-    public Page<Career> findByUser(User user, Pageable pageable);
+    Page<Career> findByUser(User user, Pageable pageable);
+
+    List<Career> findByUser(User user);
 }
