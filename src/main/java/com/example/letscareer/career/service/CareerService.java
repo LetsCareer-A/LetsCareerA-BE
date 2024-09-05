@@ -1,5 +1,6 @@
 package com.example.letscareer.career.service;
 
+import com.example.letscareer.career.domain.dto.converter.CareerConverter;
 import com.example.letscareer.career.domain.dto.response.GetAllCareersResponse;
 import com.example.letscareer.career.domain.model.Career;
 import com.example.letscareer.career.domain.dto.CareerDTO;
@@ -8,7 +9,6 @@ import com.example.letscareer.career.domain.dto.response.GetCareerDetailResponse
 import com.example.letscareer.career.domain.dto.response.GetCareersResponse;
 import com.example.letscareer.career.domain.repository.CareerRepository;
 import com.example.letscareer.common.exception.enums.ErrorCode;
-import com.example.letscareer.common.exception.model.BadRequestException;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
 import com.example.letscareer.user.domain.User;
@@ -23,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,92 +34,49 @@ public class CareerService {
 
     @Transactional
     public void saveCareer(Long userId, SaveCareerRequest request) {
-
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
+        User user = getUser(userId);
 
         if(request.title() == null || request.title().isEmpty()) {
             throw new ValidationException(ErrorCode.CAREER_TITLE_IS_EMPTY);
         }
 
-        try {
-            Career career = Career.builder()
-                    .user(user)
-                    .category(request.category())
-                    .title(request.title())
-                    .situation(request.situation())
-                    .task(request.task())
-                    .action(request.action())
-                    .result(request.result())
-                    .build();
-
-            careerRepository.save(career);
-        } catch (Exception e) {
-            throw new BadRequestException(ErrorCode.INTERNAL_SERVER_EXCEPTION);
-        }
+        Career career = Career.of(user, request);
+        careerRepository.save(career);
     }
 
+    @Transactional
     public GetCareerDetailResponse getCareerDetail(Long userId, Long careerId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
-
-        Career career = careerRepository.findByCareerIdAndUser(careerId, user)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.CAREER_NOT_FOUND_EXCEPTION));
-
-        return new GetCareerDetailResponse(
-                career.getCareerId(),
-                career.getCategory().getValue(),
-                career.getTitle(),
-                career.getSituation(),
-                career.getTask(),
-                career.getAction(),
-                career.getResult()
-        );
+        User user = getUser(userId);
+        Career career = getCareer(careerId, user);
+        return GetCareerDetailResponse.from(career);
     }
 
+    @Transactional
     public GetCareersResponse getCareers(Long userId, int page, int size) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
-
+        User user = getUser(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
-
         Page<Career> careers = careerRepository.findByUser(user, pageable);
-        List<CareerDTO> careerDTOS = careers.getContent().stream()
-                .map(career -> new CareerDTO(
-                        career.getCareerId(),
-                        career.getCategory().getValue(),
-                        career.getTitle(),
-                        toSummary(career.getSituation())
-                ))
-                .collect(Collectors.toList());
+        List<CareerDTO> careerDTOS = CareerConverter.convertToCareerDTOList(careers);
 
-        return new GetCareersResponse(
-                careers.getNumber() + 1,
-                careers.getTotalPages(),
-                careerDTOS
-        );
+        return GetCareersResponse.from(careers, careerDTOS);
     }
 
+    @Transactional
     @Cacheable(value = "allCareersCache", key = "#userId", unless = "#result == null || #result.careers.size() == 0")
     public GetAllCareersResponse getAllCareers(Long userId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
-
+        User user = getUser(userId);
         List<Career> careers = careerRepository.findByUser(user);
-
-        List<CareerDTO> careerDTOS = careers.stream()
-                .map(career -> new CareerDTO(
-                        career.getCareerId(),
-                        career.getCategory().getValue(),
-                        career.getTitle(),
-                        toSummary(career.getSituation())
-                ))
-                .collect(Collectors.toList());
-
+        List<CareerDTO> careerDTOS = CareerConverter.convertToCareerDTOList(careers);
         return new GetAllCareersResponse(careerDTOS);
     }
 
-    private String toSummary(String content) {
-        return content.length() > 25 ? content.substring(0, 25) + "..." : content;
+    private User getUser(Long userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.USER_NOT_FOUND_EXCEPTION));
+    }
+
+    private Career getCareer(Long careerId, User user) {
+        return careerRepository.findByCareerIdAndUser(careerId, user)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.CAREER_NOT_FOUND_EXCEPTION));
     }
 }
