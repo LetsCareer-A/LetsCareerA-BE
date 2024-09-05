@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StageRepository extends JpaRepository<Stage, Long> {
-
+public interface StageRepository extends JpaRepository<Stage, Long>, StageRepositoryCustom {
     @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND FUNCTION('MONTH', st.date) = :month")
     Page<Stage> findAllByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
 

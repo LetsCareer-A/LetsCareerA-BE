@@ -13,14 +13,23 @@ java {
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+repositories {
+    mavenCentral()
+}
+
+// QueryDSL configuration
+def querydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main {
+        java {
+            srcDirs += querydslDir
+        }
     }
 }
 
-repositories {
-    mavenCentral()
+configurations {
+    querydsl.extendsFrom compileClasspath
 }
 
 dependencies {
@@ -33,11 +42,20 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // redis
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+
+    // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    // s3
+    // S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+}
+
+// Correctly set up annotation processor path for QueryDSL
+tasks.withType(JavaCompile) {
+    options.annotationProcessorPath = configurations.annotationProcessor + configurations.compileClasspath
 }
 
 tasks.named('test') {
