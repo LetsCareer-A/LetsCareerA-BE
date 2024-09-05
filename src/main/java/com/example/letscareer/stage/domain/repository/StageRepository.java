@@ -15,12 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface StageRepository extends JpaRepository<Stage, Long> {
-
-    @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND FUNCTION('MONTH', st.date) = :month")
+public interface StageRepository extends JpaRepository<Stage, Long>, StageRepositoryCustom {
     Page<Stage> findAllByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
-
-    @Query("SELECT st FROM Stage st WHERE st.schedule.user.userId = :userId AND st.date = :date")
     List<Stage>findAllByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
     Optional<Stage> findTopByScheduleScheduleIdOrderByOrderDesc(Long scheudleId);
     List<Stage> findAllByScheduleAndDateBetween(Schedule schedule, LocalDate today, LocalDate threeDaysLater);
