@@ -7,11 +7,9 @@ import com.example.letscareer.schedule.domain.dto.*;
 import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.domain.dto.request.UpdateScheduleProgressRequest;
 import com.example.letscareer.schedule.domain.dto.response.*;
-import com.example.letscareer.schedule.domain.model.Progress;
 import com.example.letscareer.schedule.domain.model.Schedule;
 import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.model.Stage;
-import com.example.letscareer.stage.domain.model.Status;
 import com.example.letscareer.stage.domain.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.domain.repository.UserRepository;
@@ -310,7 +308,7 @@ public class ScheduleService {
 
         Schedule newSchedule = Schedule.toEntity(user, request);
         scheduleRepository.save(newSchedule);
-        
+
         Stage newStage = Stage.toEntity(newSchedule, request);
         stageRepository.save(newStage);
     }
