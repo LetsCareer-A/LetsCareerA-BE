@@ -3,12 +3,12 @@ package com.example.letscareer.schedule.service;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.int_review.domain.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.domain.repository.MidReviewRepository;
-import com.example.letscareer.schedule.domain.model.Progress;
-import com.example.letscareer.schedule.domain.model.Schedule;
 import com.example.letscareer.schedule.domain.dto.*;
-import com.example.letscareer.schedule.domain.dto.response.*;
 import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.domain.dto.request.UpdateScheduleProgressRequest;
+import com.example.letscareer.schedule.domain.dto.response.*;
+import com.example.letscareer.schedule.domain.model.Progress;
+import com.example.letscareer.schedule.domain.model.Schedule;
 import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.model.Stage;
 import com.example.letscareer.stage.domain.model.Status;
@@ -23,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.Period;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.SCHEDULE_NOT_FOUND_EXCEPTION;
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
@@ -75,7 +77,7 @@ public class ScheduleService {
                         interviewCount++;
                         break;
                 }
-                Integer dday = (deadline != null) ? calculateDday(deadline) : null;
+                Integer dday = (deadline != null) ? stage.calculateDday() : null;
 
                 schedules.add(new StageDTO(
                         scheduleId,
@@ -130,7 +132,7 @@ public class ScheduleService {
                 String type = stage.getType().getValue();
 
                 // D-day 계산
-                Integer dday = (stage.getDate() != null) ? calculateDday(stage.getDate()) : null;
+                Integer dday = (stage.getDate() != null) ? stage.calculateDday() : null;
 
                 // 진행 상태
                 String progress = schedule.getProgress().getValue();
@@ -361,12 +363,6 @@ public class ScheduleService {
 
         schedule.setProgress(request.progress());
         scheduleRepository.save(schedule);
-    }
-
-
-    private int calculateDday(LocalDate deadline) {
-        int dday = Period.between(LocalDate.now(), deadline).getDays();
-        return dday;
     }
 }
 

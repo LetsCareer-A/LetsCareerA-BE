@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 @Entity
 @Getter
@@ -33,4 +34,9 @@ public class Stage {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    public Integer calculateDday() {
+        if (this.date == null) return null;
+        return Period.between(this.date, LocalDate.now()).getDays();
+    }
 }
