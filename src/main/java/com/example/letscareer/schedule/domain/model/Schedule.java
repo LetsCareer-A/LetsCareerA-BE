@@ -1,5 +1,6 @@
 package com.example.letscareer.schedule.domain.model;
 
+import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.stage.domain.model.Stage;
 import com.example.letscareer.user.domain.User;
 import jakarta.persistence.*;
@@ -35,4 +36,15 @@ public class Schedule {
 
     @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Stage> stages;
+
+    public static Schedule toEntity(User user, SchedulePostRequest request) {
+        return Schedule.builder()
+                .user(user)
+                .company(request.company())
+                .department(request.department())
+                .url(request.url())
+                .always(request.always())
+                .progress(Progress.DO)
+                .build();
+    }
 }

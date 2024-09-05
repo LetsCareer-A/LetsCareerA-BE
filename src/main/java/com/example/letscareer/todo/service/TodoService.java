@@ -33,38 +33,28 @@ public class TodoService {
 
         return new TodoResponse(todos);
     }
+
+    @Transactional
     public void saveTodo(final Long userId, final TodoRequest request){
         User user = userRepository.findByUserId(userId).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Todo newTodo = Todo.builder()
-                .content(request.todo())
-                .isChecked(false)
-                .user(user)
-                .build();
+        Todo newTodo = Todo.toEntity(user, request);
         todoRepository.save(newTodo);
     }
     @Transactional
-    public void deleteTodo(final Long userId, final Long todoId){
-        User user = userRepository.findByUserId(userId).orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Optional<Todo> todo = todoRepository.findByUserAndTodoId(user, todoId);
-        if(todo.isEmpty()){
-            throw new NotFoundException(TODO_NOT_FOUND_EXCEPTION);
-        }else{
-            todoRepository.deleteByTodoId(todo.get().getTodoId());
-        }
+    public void deleteTodo(final Long userId, final Long todoId) {
+        Todo todo = todoRepository.findByUserUserIdAndTodoId(userId, todoId)
+                .orElseThrow(() -> new NotFoundException(TODO_NOT_FOUND_EXCEPTION));
+
+        todoRepository.delete(todo);
     }
 
     @Transactional
     public void changeTodoChecked(Long userId, Long todoId) {
-        Todo todo = todoRepository.findById(todoId)
+        Todo todo = todoRepository.findByUserUserIdAndTodoId(userId, todoId)
                 .orElseThrow(() -> new NotFoundException(TODO_NOT_FOUND_EXCEPTION));
 
-        // User ID가 일치하는지 확인
-        if (!todo.getUser().getUserId().equals(userId)) {
-            throw new BadRequestException(INVALID_USER_EXCEPTION);
-        }
-
-        // isChecked 필드를 반전
-        todo.setChecked(!todo.isChecked());
+        // Toggle the isChecked field
+        todo.toggleChecked();
 
         todoRepository.save(todo);
     }

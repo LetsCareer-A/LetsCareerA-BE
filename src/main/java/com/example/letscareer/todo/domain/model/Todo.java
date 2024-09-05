@@ -1,5 +1,6 @@
 package com.example.letscareer.todo.domain.model;
 
+import com.example.letscareer.todo.domain.dto.request.TodoRequest;
 import com.example.letscareer.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,4 +24,16 @@ public class Todo {
 
     private String content;
     private boolean isChecked; //boolean null 허용 안함
+
+    public static Todo toEntity(User user, TodoRequest request) {
+        return Todo.builder()
+                .content(request.todo())
+                .isChecked(false)  // Defaulting isChecked to false for new Todos
+                .user(user)
+                .build();
+    }
+    public void toggleChecked() {
+        this.isChecked = !this.isChecked;
+    }
+
 }

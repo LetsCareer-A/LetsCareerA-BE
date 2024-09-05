@@ -3,15 +3,13 @@ package com.example.letscareer.schedule.service;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.int_review.domain.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.domain.repository.MidReviewRepository;
-import com.example.letscareer.schedule.domain.model.Progress;
-import com.example.letscareer.schedule.domain.model.Schedule;
 import com.example.letscareer.schedule.domain.dto.*;
-import com.example.letscareer.schedule.domain.dto.response.*;
 import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.domain.dto.request.UpdateScheduleProgressRequest;
+import com.example.letscareer.schedule.domain.dto.response.*;
+import com.example.letscareer.schedule.domain.model.Schedule;
 import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
 import com.example.letscareer.stage.domain.model.Stage;
-import com.example.letscareer.stage.domain.model.Status;
 import com.example.letscareer.stage.domain.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.domain.repository.UserRepository;
@@ -23,8 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.Period;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.SCHEDULE_NOT_FOUND_EXCEPTION;
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
@@ -75,7 +75,7 @@ public class ScheduleService {
                         interviewCount++;
                         break;
                 }
-                Integer dday = (deadline != null) ? calculateDday(deadline) : null;
+                Integer dday = (deadline != null) ? stage.calculateDday() : null;
 
                 schedules.add(new StageDTO(
                         scheduleId,
@@ -130,7 +130,7 @@ public class ScheduleService {
                 String type = stage.getType().getValue();
 
                 // D-day 계산
-                Integer dday = (stage.getDate() != null) ? calculateDday(stage.getDate()) : null;
+                Integer dday = (stage.getDate() != null) ? stage.calculateDday() : null;
 
                 // 진행 상태
                 String progress = schedule.getProgress().getValue();
@@ -302,54 +302,15 @@ public class ScheduleService {
         );
     }
     @Transactional
-    public void postSchedule(Long userId,SchedulePostRequest request){
-        Optional<User> userOptional = userRepository.findByUserId(userId);
-        if (userOptional.isEmpty()) {
-            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
-        }
+    public void postSchedule(Long userId, SchedulePostRequest request) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
 
-        User user = userOptional.get();
+        Schedule newSchedule = Schedule.toEntity(user, request);
+        scheduleRepository.save(newSchedule);
 
-        if (!request.always()){ //schedule 일때
-            Schedule newSchedule = Schedule.builder()
-                    .user(user)
-                    .company(request.company())
-                    .department(request.department())
-                    .always(false)
-                    .url(request.url())
-                    .progress(Progress.DO)
-                    .build();
-            scheduleRepository.save(newSchedule);
-            Stage newStage = Stage.builder()
-                    .schedule(newSchedule)
-                    .type(request.type())
-                    .date(request.date())
-                    .midName(request.midname())
-                    .order(1)
-                    .status(Status.DO)
-                    .build();
-            stageRepository.save(newStage);
-        }else{ //always일때
-            Schedule newSchedule = Schedule.builder()
-                    .user(user)
-                    .company(request.company())
-                    .department(request.department())
-                    .url(request.url())
-                    .always(true)
-                    .progress(Progress.DO)
-                    .build();
-            scheduleRepository.save(newSchedule);
-            Stage newStage = Stage.builder()
-                    .schedule(newSchedule)
-                    .type(request.type())
-                    .date(request.date())
-                    .midName(request.midname())
-                    .order(1)
-                    .status(Status.DO)
-                    .build();
-            stageRepository.save(newStage);
-        }
-
+        Stage newStage = Stage.toEntity(newSchedule, request);
+        stageRepository.save(newStage);
     }
 
     @Transactional
@@ -361,12 +322,6 @@ public class ScheduleService {
 
         schedule.setProgress(request.progress());
         scheduleRepository.save(schedule);
-    }
-
-
-    private int calculateDday(LocalDate deadline) {
-        int dday = Period.between(LocalDate.now(), deadline).getDays();
-        return dday;
     }
 }
 
