@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface TodoRepository extends JpaRepository<Todo, Long> {
     List<Todo> findAllByUserUserId(Long userId);
-    Optional<Todo> findByUserAndTodoId(User user,Long todoId);
+    Optional<Todo> findByUserUserIdAndTodoId(Long userId, Long todoId);
     void deleteByTodoId(Long todoId);
 }
