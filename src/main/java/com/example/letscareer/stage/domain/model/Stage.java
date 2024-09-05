@@ -1,5 +1,6 @@
 package com.example.letscareer.stage.domain.model;
 
+import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.domain.model.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,5 +39,15 @@ public class Stage {
     public Integer calculateDday() {
         if (this.date == null) return null;
         return Period.between(this.date, LocalDate.now()).getDays();
+    }
+    public static Stage toEntity(Schedule schedule, SchedulePostRequest request) {
+        return Stage.builder()
+                .schedule(schedule)
+                .type(request.type())
+                .date(request.date())
+                .midName(request.midname())
+                .order(1)
+                .status(Status.DO)
+                .build();
     }
 }

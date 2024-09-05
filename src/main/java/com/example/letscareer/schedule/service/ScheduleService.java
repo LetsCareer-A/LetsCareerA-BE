@@ -304,54 +304,15 @@ public class ScheduleService {
         );
     }
     @Transactional
-    public void postSchedule(Long userId,SchedulePostRequest request){
-        Optional<User> userOptional = userRepository.findByUserId(userId);
-        if (userOptional.isEmpty()) {
-            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
-        }
+    public void postSchedule(Long userId, SchedulePostRequest request) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
 
-        User user = userOptional.get();
-
-        if (!request.always()){ //schedule 일때
-            Schedule newSchedule = Schedule.builder()
-                    .user(user)
-                    .company(request.company())
-                    .department(request.department())
-                    .always(false)
-                    .url(request.url())
-                    .progress(Progress.DO)
-                    .build();
-            scheduleRepository.save(newSchedule);
-            Stage newStage = Stage.builder()
-                    .schedule(newSchedule)
-                    .type(request.type())
-                    .date(request.date())
-                    .midName(request.midname())
-                    .order(1)
-                    .status(Status.DO)
-                    .build();
-            stageRepository.save(newStage);
-        }else{ //always일때
-            Schedule newSchedule = Schedule.builder()
-                    .user(user)
-                    .company(request.company())
-                    .department(request.department())
-                    .url(request.url())
-                    .always(true)
-                    .progress(Progress.DO)
-                    .build();
-            scheduleRepository.save(newSchedule);
-            Stage newStage = Stage.builder()
-                    .schedule(newSchedule)
-                    .type(request.type())
-                    .date(request.date())
-                    .midName(request.midname())
-                    .order(1)
-                    .status(Status.DO)
-                    .build();
-            stageRepository.save(newStage);
-        }
-
+        Schedule newSchedule = Schedule.toEntity(user, request);
+        scheduleRepository.save(newSchedule);
+        
+        Stage newStage = Stage.toEntity(newSchedule, request);
+        stageRepository.save(newStage);
     }
 
     @Transactional
