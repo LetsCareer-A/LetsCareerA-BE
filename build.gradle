@@ -13,23 +13,14 @@ java {
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
-// QueryDSL configuration
-def querydslDir = "$buildDir/generated/querydsl"
-
-sourceSets {
-    main {
-        java {
-            srcDirs += querydslDir
-        }
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
     }
 }
 
-configurations {
-    querydsl.extendsFrom compileClasspath
+repositories {
+    mavenCentral()
 }
 
 dependencies {
@@ -42,21 +33,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // QueryDSL
-    implementation 'com.querydsl:querydsl-jpa:5.0.0'
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+    //QueryDsl
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
-    // Redis
+    // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-    // S3
+    // s3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
-
-// Correctly set up annotation processor path for QueryDSL
-tasks.withType(JavaCompile) {
-    options.annotationProcessorPath = configurations.annotationProcessor + configurations.compileClasspath
-}
+// gradle clean 시에 QClass 디렉토리 삭제
+clean {	delete file('src/main/generated')}
 
 tasks.named('test') {
     useJUnitPlatform()

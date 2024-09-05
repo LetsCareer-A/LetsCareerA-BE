@@ -1,5 +1,7 @@
 package com.example.letscareer.stage.domain.repository;
 
+
+
 import com.example.letscareer.stage.domain.model.Stage;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
@@ -9,8 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.example.letscareer.stage.domain.model.QStage.stage;  // QStage 클래스의 임포트 경로
-
+import static com.example.letscareer.stage.domain.model.QStage.stage;
 @Repository
 public class StageRepositoryImpl implements StageRepositoryCustom {
 
