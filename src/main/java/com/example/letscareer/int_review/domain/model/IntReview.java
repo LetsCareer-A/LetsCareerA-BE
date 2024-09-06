@@ -1,5 +1,6 @@
 package com.example.letscareer.int_review.domain.model;
 
+import com.example.letscareer.int_review.domain.dto.request.PostIntReviewRequest;
 import com.example.letscareer.stage.domain.model.Stage;
 import com.example.letscareer.user.domain.User;
 import jakarta.persistence.*;
@@ -8,7 +9,6 @@ import org.antlr.v4.runtime.misc.NotNull;
 
 @Entity
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,4 +33,14 @@ public class IntReview {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
+
+    public static IntReview of(PostIntReviewRequest request, Stage stage, User user) {
+        return IntReview.builder()
+                .method(request.details())
+                .questions(request.qa())
+                .feelings(request.feel())
+                .stage(stage)
+                .user(user)
+                .build();
+    }
 }
