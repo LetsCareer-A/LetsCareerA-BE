@@ -41,12 +41,7 @@ public class SelfIntroService {
 
         // 새로 들어온 자기소개서 항목을 저장한다.
         for (SelfIntroDTO selfIntroDTO : request.selfIntros()) {
-            SelfIntro selfIntro = SelfIntro.builder()
-                    .title(selfIntroDTO.title())
-                    .sequence(selfIntroDTO.sequence())
-                    .content(selfIntroDTO.content())
-                    .stage(stage)
-                    .build();
+            SelfIntro selfIntro = SelfIntro.of(selfIntroDTO, stage);
             selfIntroRepository.save(selfIntro);
         }
     }

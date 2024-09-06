@@ -1,5 +1,6 @@
 package com.example.letscareer.self_intro.domain.model;
 
+import com.example.letscareer.self_intro.domain.dto.SelfIntroDTO;
 import com.example.letscareer.stage.domain.model.Stage;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,4 +28,13 @@ public class SelfIntro {
     @JoinColumn(name = "stageId")
     @NotNull
     private Stage stage;
+
+    public static SelfIntro of(SelfIntroDTO selfIntroDTO, Stage stage) {
+        return SelfIntro.builder()
+                .title(selfIntroDTO.title())
+                .sequence(selfIntroDTO.sequence())
+                .content(selfIntroDTO.content())
+                .stage(stage)
+                .build();
+    }
 }
