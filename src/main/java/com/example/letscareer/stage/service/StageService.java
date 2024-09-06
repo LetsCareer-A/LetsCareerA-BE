@@ -1,5 +1,6 @@
 package com.example.letscareer.stage.service;
 
+import com.example.letscareer.appealCareer.domain.model.AppealCareer;
 import com.example.letscareer.appealCareer.domain.repository.AppealCareerRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.int_review.domain.model.IntReview;
@@ -11,6 +12,7 @@ import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
 import com.example.letscareer.self_intro.domain.model.SelfIntro;
 import com.example.letscareer.self_intro.domain.dto.SelfIntroDTO;
 import com.example.letscareer.self_intro.domain.repository.SelfIntroRepository;
+import com.example.letscareer.stage.domain.dto.converter.StageConverter;
 import com.example.letscareer.stage.domain.model.Stage;
 import com.example.letscareer.stage.domain.model.Status;
 import com.example.letscareer.stage.domain.model.Type;
@@ -52,45 +54,86 @@ public class StageService {
 
     @Transactional
     public AddStageResponse addStage(Long userId, Long scheduleId, AddStageRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-
-        Stage stage = Stage.builder()
-                .schedule(schedule)
-                .type(request.type())
-                .midName(request.mid_name())
-                .date(request.date())
-                .status(Status.DO)
-                .order(schedule.getStages().size() + 1)
-                .build();
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = Stage.of(schedule, request);
 
         stageRepository.save(stage);
 
-        // D-day 계산
         Integer dday = (request.date() != null) ? calculateDday(request.date()) : null;
-
-        return new AddStageResponse(
-                stage.getStageId(),
-                stage.getType().getValue(),
-                stage.getType().equals(Type.MID) ? stage.getMidName() : "",
-                stage.getStatus().getValue(),
-                stage.getDate(),
-                dday);
+        return AddStageResponse.from(stage, dday);
     }
 
     @Transactional
     public void updateStageStatus(Long userId, Long scheduleId, Long stageId, UpdateStageStatusRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
-
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
         stage.setStatus(request.status());
         stageRepository.save(stage);
+    }
+
+    @Transactional
+    public GetStagesResponse getStages(Long userId, Long scheduleId) {
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+
+        // 해당 스케쥴에 속한 모든 스테이지 조회
+        List<Stage> stages = stageRepository.findBySchedule(schedule);
+        List<StageDTO> stageDTOs = StageConverter.toStageDTOs(stages, schedule);;
+
+        return GetStagesResponse.from(schedule, stageDTOs);
+    }
+
+    @Transactional
+    public GetDocumentStageResponse getDocumentStage(Long userId, Long scheduleId, Long stageId) {
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
+
+        // SelfIntroDTO 변환
+        List<SelfIntro> selfIntros = selfIntroRepository.findByStage(stage);
+        List<SelfIntroDTO> selfIntroDTOs = StageConverter.toSelfIntroDTOs(selfIntros);
+
+        // AppealCareerDTO 변환
+        List<AppealCareer> appealCareers = appealCareerRepository.findByStage(stage);
+        List<AppealCareerDTO> appealCareerDTOs = StageConverter.toAppealCareerDTOs(appealCareers);
+
+        return GetDocumentStageResponse.from(stage, selfIntroDTOs, appealCareerDTOs);
+    }
+
+    @Transactional
+    public GetMidStageResponse getMidStage(Long userId, Long scheduleId, Long stageId) {
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
+        Optional<MidReview> midReview = midReviewRepository.findByStage(stage);
+
+        return midReview
+                .map(review -> new GetMidStageResponse(false, MidReviewDTO.from(review)))
+                .orElseGet(() -> new GetMidStageResponse(true, null));
+    }
+
+    @Transactional
+    public GetInterviewStageResponse getInterviewStage(Long userId, Long scheduleId, Long stageId) {
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
+
+        // AppealCareerDTO 변환
+        List<AppealCareer> appealCareers = appealCareerRepository.findByStage(stage);
+        List<AppealCareerDTO> appealCareerDTOs = StageConverter.toAppealCareerDTOs(appealCareers);
+
+        // IntReviewDTO 변환
+        Optional<IntReviewDTO> intReviewDTO = intReviewRepository.findByStage(stage)
+                .map(IntReviewDTO::from);
+
+        return new GetInterviewStageResponse(intReviewDTO.isEmpty(), intReviewDTO.orElse(null), appealCareerDTOs);
+    }
+
+    private Stage getStage(Long stageId, Schedule schedule) {
+        return stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
     }
 
     private int calculateDday(LocalDate deadline) {
@@ -98,134 +141,15 @@ public class StageService {
         return dday;
     }
 
-    public GetStagesResponse getStages(Long userId, Long scheduleId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+
+    private Schedule getSchedule(Long scheduleId, User user) {
+        return scheduleRepository.findByUserAndScheduleId(user, scheduleId)
                 .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-
-        // 해당 스케쥴에 속한 모든 스테이지 조회
-        List<Stage> stages = stageRepository.findBySchedule(schedule);
-        List<StageDTO> stageDTOs = new ArrayList<>();
-
-        for(Stage stage : stages) {
-            // D-day 계산
-            String dday = (!schedule.isAlways()) ? String.valueOf(calculateDday(stage.getDate())) : "";
-            stageDTOs.add(
-                    new StageDTO(
-                            stage.getStageId(),
-                            stage.getOrder(),
-                            stage.getType().getValue(),
-                            stage.getType().equals(Type.MID) ? stage.getMidName() : "",
-                            stage.getStatus().getValue(),
-                            schedule.isAlways() ? "" : stage.getDate().toString(),
-                            dday
-                    )
-            );
-        }
-
-        return new GetStagesResponse(
-                schedule.getScheduleId(),
-                schedule.getCompany(),
-                schedule.getDepartment(),
-                schedule.getUrl(),
-                schedule.getProgress().getValue(),
-                schedule.isAlways(),
-                stageDTOs);
     }
 
-    public GetDocumentStageResponse getDocumentStage(Long userId, Long scheduleId, Long stageId) {
-        User user = userRepository.findById(userId)
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByScheduleAndStageIdAndType(schedule, stageId, Type.DOC)
-                .orElseThrow(() -> new NotFoundException(DOC_STAGE_NOT_FOUND_EXCEPTION));
-
-        List<SelfIntro> selfIntros = selfIntroRepository.findByStage(stage);
-        List<SelfIntroDTO> selfIntroDTOs = new ArrayList<>();
-        for(SelfIntro selfIntro : selfIntros) {
-            selfIntroDTOs.add(
-                    new SelfIntroDTO(
-                            selfIntro.getTitle(),
-                            selfIntro.getSequence(),
-                            selfIntro.getContent()
-                    )
-            );
-        }
-
-        List<AppealCareerDTO> appealCareerDTOs = appealCareerRepository.findByStage(stage).stream()
-                .map(appealCareer -> new AppealCareerDTO(
-                        appealCareer.getCareer().getCareerId(),
-                        appealCareer.getCareer().getCategory().getValue(),
-                        appealCareer.getCareer().getTitle()
-                ))
-                .toList();
-
-        return new GetDocumentStageResponse(
-                stage.getStageId(),
-                stage.getType().getValue(),
-                selfIntroDTOs,
-                appealCareerDTOs
-        );
     }
 
-    public GetMidStageResponse getMidStage(Long userId, Long scheduleId, Long stageId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByScheduleAndStageIdAndType(schedule, stageId, Type.MID)
-                .orElseThrow(() -> new NotFoundException(MID_STAGE_NOT_FOUND_EXCEPTION));
-
-        Optional<MidReview> midReview = midReviewRepository.findByStage(stage);
-
-        if(midReview.isEmpty()) {
-            return new GetMidStageResponse(
-                    true,
-                    null
-            );
-        }
-        else {
-            MidReviewDTO midReviewDTO = new MidReviewDTO(
-                    midReview.get().getMidReviewId(),
-                    midReview.get().getFreeReview(),
-                    midReview.get().getGoal()
-            );
-            return new GetMidStageResponse(
-                    false,
-                    midReviewDTO
-            );
-        }
-    }
-
-    public GetInterviewStageResponse getInterviewStage(Long userId, Long scheduleId, Long stageId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByScheduleAndStageIdAndType(schedule, stageId, Type.INT)
-                .orElseThrow(() -> new NotFoundException(INT_STAGE_NOT_FOUND_EXCEPTION));
-
-        List<AppealCareerDTO> appealCareerDTOs = appealCareerRepository.findByStage(stage).stream()
-                .map(appealCareer -> new AppealCareerDTO(
-                        appealCareer.getCareer().getCareerId(),
-                        appealCareer.getCareer().getCategory().getValue(),
-                        appealCareer.getCareer().getTitle()
-                ))
-                .toList();
-
-        Optional<IntReview> intReview = intReviewRepository.findByStage(stage);
-
-        return new GetInterviewStageResponse(
-                !intReview.isPresent(),
-                intReview.map(ir -> new IntReviewDTO(
-                        ir.getIntReviewId(),
-                        ir.getMethod(),
-                        ir.getQuestions(),
-                        ir.getFeelings()
-                )).orElse(null),
-                appealCareerDTOs
-        );
-    }
 }

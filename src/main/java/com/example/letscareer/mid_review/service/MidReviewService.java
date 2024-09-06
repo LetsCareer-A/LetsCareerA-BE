@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
@@ -28,41 +30,42 @@ public class MidReviewService {
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public MidReviewDetailResponse getMidReview(Long userId, Long scheduleId,Long stageId, Long midReviewId){
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        MidReview midReview =  midReviewRepository.findByMidReviewIdAndUser(midReviewId, user)
-                .orElseThrow(()-> new NotFoundException(MID_REVIEW_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
-        return new MidReviewDetailResponse(
-                schedule.getCompany(),
-                schedule.getDepartment(),
-                stage.getType().getValue(),
-                stage.getDate(),
-                midReview.getFreeReview(),
-                midReview.getGoal()
-        );
+        User user = getUser(userId);
+        MidReview midReview = getMidReview(midReviewId, user);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
+        return MidReviewDetailResponse.from(schedule, stage, midReview);
     }
 
     @Transactional
     public void postMidReview(Long userId, Long scheduleId, Long stageId, PostMidReviewRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
 
-        MidReview midReview = MidReview.builder()
-                        .freeReview(request.free_review())
-                        .goal(request.goal())
-                        .stage(stage)
-                        .user(user)
-                        .build();
-
+        MidReview midReview = MidReview.of(request, stage, user);
         midReviewRepository.save(midReview);
+    }
+
+    private Stage getStage(Long stageId, Schedule schedule) {
+        return stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
+    }
+
+    private Schedule getSchedule(Long scheduleId, User user) {
+        return scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
+    }
+
+    private MidReview getMidReview(Long midReviewId, User user) {
+        return midReviewRepository.findByMidReviewIdAndUser(midReviewId, user)
+                .orElseThrow(() -> new NotFoundException(MID_REVIEW_NOT_FOUND_EXCEPTION));
     }
 }

@@ -15,7 +15,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import static com.example.letscareer.common.exception.enums.ErrorCode.*;
 
 @Service
@@ -28,44 +27,41 @@ public class IntReviewService {
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public IntReviewDetailResponse getIntReview(Long userId, Long scheduleId, Long stageId, Long intReviewId){
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        IntReview intReview =  intReviewRepository.findByIntReviewIdAndUser(intReviewId, user)
-                .orElseThrow(()-> new NotFoundException(INT_REVIEW_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
-        return new IntReviewDetailResponse(
-                schedule.getCompany(),
-                schedule.getDepartment(),
-                stage.getType().getValue(),
-                stage.getDate(),
-                intReview.getMethod(),
-                intReview.getQuestions(),
-                intReview.getFeelings()
-
-        );
+        User user = getUser(userId);
+        IntReview intReview = getIntReview(intReviewId, user);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
+        return IntReviewDetailResponse.from(schedule, stage, intReview);
     }
 
     @Transactional
     public void postIntReview(Long userId, Long scheduleId, Long stageId, PostIntReviewRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        Schedule schedule = scheduleRepository.findByUserAndScheduleId(user, scheduleId)
-                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
-        Stage stage = stageRepository.findByStageIdAndSchedule(stageId, schedule)
-                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
-
-        IntReview intReview = IntReview.builder()
-                        .stage(stage)
-                        .method(request.details())
-                        .questions(request.qa())
-                        .feelings(request.feel())
-                        .user(user)
-                        .build();
-
+        User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId, user);
+        Stage stage = getStage(stageId, schedule);
+        IntReview intReview = IntReview.of(request, stage, user);
         intReviewRepository.save(intReview);
+    }
+
+    private Stage getStage(Long stageId, Schedule schedule) {
+        return stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(STAGE_NOT_FOUND_EXCEPTION));
+    }
+
+    private Schedule getSchedule(Long scheduleId, User user) {
+        return scheduleRepository.findByUserAndScheduleId(user, scheduleId)
+                .orElseThrow(() -> new NotFoundException(SCHEDULE_NOT_FOUND_EXCEPTION));
+    }
+
+    private IntReview getIntReview(Long intReviewId, User user) {
+        return intReviewRepository.findByIntReviewIdAndUser(intReviewId, user)
+                .orElseThrow(() -> new NotFoundException(INT_REVIEW_NOT_FOUND_EXCEPTION));
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
     }
 }

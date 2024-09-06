@@ -1,5 +1,6 @@
 package com.example.letscareer.mid_review.domain.model;
 
+import com.example.letscareer.mid_review.domain.dto.request.PostMidReviewRequest;
 import com.example.letscareer.stage.domain.model.Stage;
 import com.example.letscareer.user.domain.User;
 import jakarta.persistence.*;
@@ -29,4 +30,13 @@ public class MidReview {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
     private User user;
+
+    public static MidReview of(PostMidReviewRequest request, Stage stage, User user) {
+        return MidReview.builder()
+                .freeReview(request.free_review())
+                .goal(request.goal())
+                .stage(stage)
+                .user(user)
+                .build();
+    }
 }
