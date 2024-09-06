@@ -2,6 +2,7 @@ package com.example.letscareer.stage.domain.model;
 
 import com.example.letscareer.schedule.domain.dto.request.SchedulePostRequest;
 import com.example.letscareer.schedule.domain.model.Schedule;
+import com.example.letscareer.stage.domain.dto.request.AddStageRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,6 +49,17 @@ public class Stage {
                 .midName(request.midname())
                 .order(1)
                 .status(Status.DO)
+                .build();
+    }
+
+    public static Stage of(Schedule schedule, AddStageRequest request) {
+        return Stage.builder()
+                .schedule(schedule)
+                .type(request.type())
+                .date(request.date())
+                .midName(request.mid_name())
+                .status(Status.DO)
+                .order(schedule.getStages().size() + 1)
                 .build();
     }
 }
