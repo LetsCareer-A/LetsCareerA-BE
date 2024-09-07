@@ -188,7 +188,7 @@ public class ScheduleService {
     }
     public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size){
         LocalDate today = LocalDate.now();
-        LocalDate threeDaysLater = today.plusDays(4); // D+3까지 포함
+        LocalDate threeDaysPrevious = today.minusDays(4);
 
         Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
 
@@ -200,8 +200,8 @@ public class ScheduleService {
         int cnt = 0; // D+3까지 회고 없는 stage 개수
 
         for (Schedule schedule : schedulePage) {
-            // 오늘부터 D+3 사이의 Stage를 조회
-            List<Stage> stages = stageRepository.findAllByScheduleAndDateBetween(schedule, today, threeDaysLater);
+            // 오늘부터  3일 지난  Stage를 조회
+            List<Stage> stages = stageRepository.findAllByScheduleAndDateBetween(schedule, threeDaysPrevious, today);
 
             for (Stage stage : stages) {
                 boolean hasIntReview = intReviewRepository.existsByStage(stage);

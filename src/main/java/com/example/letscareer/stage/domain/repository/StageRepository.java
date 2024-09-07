@@ -19,7 +19,7 @@ public interface StageRepository extends JpaRepository<Stage, Long>, StageReposi
     Page<Stage> findAllByUserIdAndMonth(@Param("userId") Long userId, @Param("month") int month, Pageable pageable);
     List<Stage>findAllByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
     Optional<Stage> findTopByScheduleScheduleIdOrderByOrderDesc(Long scheudleId);
-    List<Stage> findAllByScheduleAndDateBetween(Schedule schedule, LocalDate today, LocalDate threeDaysLater);
+    List<Stage> findAllByScheduleAndDateBetween(Schedule schedule, LocalDate threeDaysPrevious, LocalDate today);
     Optional<Stage> findByStageIdAndSchedule(Long stageId, Schedule schedule);
     List<Stage> findAllBySchedule(Schedule schedule);
 
