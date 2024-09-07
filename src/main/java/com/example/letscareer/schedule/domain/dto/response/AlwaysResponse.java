@@ -7,6 +7,7 @@ import java.util.List;
 public record AlwaysResponse(
         Integer page,
         Integer size,
+        Long total,
         List<AlwaysDTO> always
 ) {
 }

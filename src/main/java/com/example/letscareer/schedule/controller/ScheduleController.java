@@ -23,7 +23,7 @@ import java.time.LocalDate;
 public class ScheduleController {
     private final ScheduleService scheduleService;
 
-    @GetMapping
+    @GetMapping("/coming")
     public ApiResponse getSchedulesComing(
             @RequestHeader("userId") Long userId,
             @RequestParam("month") int month,
@@ -37,7 +37,7 @@ public class ScheduleController {
             }
     }
 
-    @GetMapping
+    @GetMapping("/calendar")
     public ApiResponse getSchedulesCalendar(
             @RequestHeader("userId") Long userId,
             @RequestParam("month") int month) {

@@ -208,7 +208,7 @@ public class ScheduleService {
 
         // 사용자 ID, always 조회
         Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserIdAndAlwaysTrue(userId, pageable);
-
+        long total = schedulePage.getTotalElements();
         // 항상 일정 목록을 DTO로 변환
         List<AlwaysDTO> alwaysList = new ArrayList<>();
         for (Schedule schedule : schedulePage) {
@@ -225,7 +225,7 @@ public class ScheduleService {
             alwaysList.add(new AlwaysDTO(scheduleId, stageId, company, department, status));
         }
 
-        return new AlwaysResponse(page, size, alwaysList);
+        return new AlwaysResponse(page, size, total,alwaysList);
     }
     public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size) {
         LocalDate today = LocalDate.now();
