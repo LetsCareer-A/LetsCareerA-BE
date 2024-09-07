@@ -38,7 +38,7 @@ public class ScheduleService {
     private final IntReviewRepository intReviewRepository;
     private final MidReviewRepository midReviewRepository;
 
-    public ScheduleResponse getSchedules(final Long userId, final int month, final int page, final int size) {
+    public ScheduleResponse getSchedulesComing(final Long userId, final int month, final int page, final int size) {
 
         Optional<User> user = userRepository.findByUserId(userId);
         if (user.isEmpty()) {
@@ -49,6 +49,54 @@ public class ScheduleService {
 
         // user, month 로 stage 찾기
         Page<Stage> stagePage = stageRepository.findAllByUserIdAndMonth(userId, month, pageable);
+        long total = stagePage.getTotalElements();
+
+        List<StageDTO> schedules = new ArrayList<>();
+
+        for (Stage stage : stagePage) {
+            Schedule schedule = stage.getSchedule();
+            if (schedule != null) {
+                Long scheduleId = schedule.getScheduleId();
+                Long stageId = stage.getStageId();
+                String type = stage.getType().getValue();
+                LocalDate deadline = stage.getDate();
+
+                Integer dday = (deadline != null) ? stage.calculateDday() : null;
+
+                schedules.add(new StageDTO(
+                        scheduleId,
+                        stageId,
+                        schedule.getCompany(),
+                        schedule.getDepartment(),
+                        type,
+                        deadline,
+                        dday,
+                        schedule.getProgress()
+                ));
+            }
+        }
+
+         //sort  -1, -3, +1
+        schedules.sort(
+                Comparator.<StageDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
+                        .thenComparingInt(dto -> Math.abs(dto.dday()))  // 절대값 기준 정렬
+        );
+        return new ScheduleResponse(
+                page,
+                size,
+                total,
+                schedules
+        );
+    }
+    public CalendarResponse getSchedulesCalendar(final Long userId, final int month) {
+
+        Optional<User> user = userRepository.findByUserId(userId);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+        }
+
+        // user, month 로 stage 찾기
+        List<Stage> stages = stageRepository.findAllByUserIdAndMonth(userId, month);
 
         int docCount = 0;
         int midCount = 0;
@@ -56,7 +104,7 @@ public class ScheduleService {
 
         List<StageDTO> schedules = new ArrayList<>();
 
-        for (Stage stage : stagePage) {
+        for (Stage stage : stages) {
             Schedule schedule = stage.getSchedule();
             if (schedule != null) {
                 Long scheduleId = schedule.getScheduleId();
@@ -90,14 +138,7 @@ public class ScheduleService {
             }
         }
 
-         //sort  -1, -3, +1
-        schedules.sort(
-                Comparator.<StageDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
-                        .thenComparingInt(dto -> Math.abs(dto.dday()))  // 절대값 기준 정렬
-        );
-        return new ScheduleResponse(
-                page,
-                size,
+        return new CalendarResponse(
                 docCount,
                 midCount,
                 interviewCount,
@@ -167,7 +208,7 @@ public class ScheduleService {
 
         // 사용자 ID, always 조회
         Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserIdAndAlwaysTrue(userId, pageable);
-
+        long total = schedulePage.getTotalElements();
         // 항상 일정 목록을 DTO로 변환
         List<AlwaysDTO> alwaysList = new ArrayList<>();
         for (Schedule schedule : schedulePage) {
@@ -184,123 +225,123 @@ public class ScheduleService {
             alwaysList.add(new AlwaysDTO(scheduleId, stageId, company, department, status));
         }
 
-        return new AlwaysResponse(page, size, alwaysList);
+        return new AlwaysResponse(page, size, total,alwaysList);
     }
-    public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size){
+    public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size) {
         LocalDate today = LocalDate.now();
-        LocalDate threeDaysLater = today.plusDays(4); // D+3까지 포함
+        LocalDate threeDaysPrevious = today.minusDays(4);
 
-        Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
+        Pageable pageable = PageRequest.of(page - 1, size); // 페이지네이션을 Stage 단위로 처리
 
-        // 사용자 ID로 모든 Schedule 조회
-        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
+        // 먼저 userId로 Schedule 목록을 가져옴
+        List<Schedule> schedules = scheduleRepository.findAllByUserUserId(userId);
+
+        if (schedules.isEmpty()) {
+            return new FastReviewListResponse(page, size, 0, new ArrayList<>());
+        }
+
+        // QueryDSL로 Stage 조회
+        Page<Stage> stagePage = stageRepository.findAllByScheduleInAndDateBetweenAndIntReviewNotExistsAndMidReviewNotExists(
+                schedules, threeDaysPrevious, today, pageable);
 
         List<FastDTO> fastReviews = new ArrayList<>();
 
-        int cnt = 0; // D+3까지 회고 없는 stage 개수
-
-        for (Schedule schedule : schedulePage) {
-            // 오늘부터 D+3 사이의 Stage를 조회
-            List<Stage> stages = stageRepository.findAllByScheduleAndDateBetween(schedule, today, threeDaysLater);
-
-            for (Stage stage : stages) {
-                boolean hasIntReview = intReviewRepository.existsByStage(stage);
-                boolean hasMidReview = midReviewRepository.existsByStage(stage);
-
-                if (!hasIntReview && !hasMidReview) {
-                    // 회고가 없는 Stage만 리스트에 추가
-                    cnt++; // 회고 없는 stage 개수 증가
-                    fastReviews.add(new FastDTO(
-                            stage.getStageId(),
-                            schedule.getScheduleId(),
-                            schedule.getCompany(),
-                            schedule.getDepartment()
-                    ));
-                }
-            }
+        for (Stage stage : stagePage) {
+            fastReviews.add(new FastDTO(
+                    stage.getStageId(),
+                    stage.getSchedule().getScheduleId(),
+                    stage.getSchedule().getCompany(),
+                    stage.getSchedule().getDepartment()
+            ));
         }
 
         return new FastReviewListResponse(
                 page,
                 size,
-                cnt,
+                (int) stagePage.getTotalElements(),
                 fastReviews
         );
     }
     public CompanyReviewListResponse getCompanyReviewList(final Long userId, final int page, final int size) {
-        Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
+        Pageable pageable = PageRequest.of(page - 1, size); // 페이지네이션
+
+        // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
-        // 사용자 ID로 모든 Schedule 조회
-        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
+
+        // 회사명(company)별로 스케줄을 그룹화하여 페이징 처리
+        Page<String> companyPage = scheduleRepository.findDistinctCompanyByUser(user, pageable);
 
         // 기업별로 리뷰를 분류하기 위한 List
         List<CompanyReviewDTO> companies = new ArrayList<>();
 
-        // 스케줄을 순회하면서 관련 스테이지와 회고 여부를 확인
-        for (Schedule schedule : schedulePage) {
-            String company = schedule.getCompany();
+        // 각 회사별로 스케줄과 스테이지를 조회하고 리뷰 여부 확인
+        for (String company : companyPage) {
+            // 각 회사에 속하는 모든 스케줄 조회
+            List<Schedule> schedules = scheduleRepository.findAllByUserAndCompany(user, company);
 
-            // 각 회사별 면접과 중간 리뷰 리스트 초기화
+            // 면접 및 중간 리뷰 리스트 초기화
             List<CompanyReviewDetailDTO> interviewReviews = new ArrayList<>();
             List<CompanyReviewDetailDTO> midtermReviews = new ArrayList<>();
 
-            // 모든 Stage를 조회
-            List<Stage> stages = stageRepository.findAllBySchedule(schedule);
+            for (Schedule schedule : schedules) {
+                // 해당 스케줄의 모든 스테이지를 조회
+                List<Stage> stages = stageRepository.findAllBySchedule(schedule);
 
-            for (Stage stage : stages) {
-                String type = stage.getType().getValue(); // Stage의 type 필드
-                boolean isReviewed = false;
-                Long reviewId = null; // 리뷰 ID 초기화
+                for (Stage stage : stages) {
+                    String type = stage.getType().getValue();
+                    boolean isReviewed = false;
+                    Long reviewId = null;
 
-                if (type.equals("면접")) {
-                    // INT 타입의 스테이지인 경우 IntReview만 확인
-                    isReviewed = intReviewRepository.existsByStage(stage);
-                    if (isReviewed) {
-                        reviewId = intReviewRepository.findIntReviewIdByStageAndUser(stage, user).orElse(null); // 리뷰 ID 가져오기
+                    if (type.equals("면접")) {
+                        isReviewed = intReviewRepository.existsByStage(stage);
+                        if (isReviewed) {
+                            reviewId = intReviewRepository.findIntReviewIdByStageAndUser(stage, user).orElse(null);
+                        }
+
+                        // 면접 리뷰 추가
+                        CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
+                                schedule.getScheduleId(),
+                                stage.getStageId(),
+                                reviewId,
+                                schedule.getDepartment(),
+                                stage.getDate(),
+                                isReviewed
+                        );
+                        interviewReviews.add(reviewDetail);
+
+                    } else if (type.equals("중간")) {
+                        isReviewed = midReviewRepository.existsByStage(stage);
+                        if (isReviewed) {
+                            reviewId = midReviewRepository.findMidReviewIdByStageAndUser(stage, user).orElse(null);
+                        }
+
+                        // 중간 리뷰 추가
+                        CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
+                                schedule.getScheduleId(),
+                                stage.getStageId(),
+                                reviewId,
+                                schedule.getDepartment(),
+                                stage.getDate(),
+                                isReviewed
+                        );
+                        midtermReviews.add(reviewDetail);
                     }
-
-                    // 면접 리뷰를 추가
-                    CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
-                            schedule.getScheduleId(),
-                            stage.getStageId(),
-                            reviewId,
-                            schedule.getDepartment(),
-                            stage.getDate(),
-                            isReviewed
-                    );
-                    interviewReviews.add(reviewDetail);
-
-                } else if (type.equals("중간")) {
-                    // MID 타입의 스테이지인 경우 MidReview만 확인
-                    isReviewed = midReviewRepository.existsByStage(stage);
-                    if (isReviewed) {
-                        reviewId = midReviewRepository.findMidReviewIdByStageAndUser(stage, user).orElse(null); // 리뷰 ID 가져오기
-                    }
-
-                    // 중간 리뷰를 추가
-                    CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
-                            schedule.getScheduleId(),
-                            stage.getStageId(),
-                            reviewId,
-                            schedule.getDepartment(),
-                            stage.getDate(),
-                            isReviewed
-                    );
-                    midtermReviews.add(reviewDetail);
                 }
             }
 
-            // 기업별 리뷰 DTO 추가
+            // 회사별로 그룹화된 리뷰 DTO 추가
             companies.add(new CompanyReviewDTO(company, interviewReviews, midtermReviews));
         }
 
         return new CompanyReviewListResponse(
                 page,
                 size,
+                companyPage.getTotalElements(),
                 companies
         );
     }
+
     @Transactional
     public void postSchedule(Long userId, SchedulePostRequest request) {
         User user = userRepository.findByUserId(userId)

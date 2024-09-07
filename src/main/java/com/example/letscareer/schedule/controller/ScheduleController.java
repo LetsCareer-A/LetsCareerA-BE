@@ -23,18 +23,30 @@ import java.time.LocalDate;
 public class ScheduleController {
     private final ScheduleService scheduleService;
 
-    @GetMapping
-    public ApiResponse getSchedules(
+    @GetMapping("/coming")
+    public ApiResponse getSchedulesComing(
             @RequestHeader("userId") Long userId,
             @RequestParam("month") int month,
             @RequestParam("page") int page,
             @RequestParam("size") int size) {
             try {
-                ScheduleResponse scheduleResponse = scheduleService.getSchedules(userId, month, page, size);
+                ScheduleResponse scheduleResponse = scheduleService.getSchedulesComing(userId, month, page, size);
                 return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, scheduleResponse);
             }catch (NotFoundException | BadRequestException e) {
                 return ErrorResponse.error(e.getErrorCode());
             }
+    }
+
+    @GetMapping("/calendar")
+    public ApiResponse getSchedulesCalendar(
+            @RequestHeader("userId") Long userId,
+            @RequestParam("month") int month) {
+        try {
+            CalendarResponse calendarResponse= scheduleService.getSchedulesCalendar(userId, month);
+            return SuccessResponse.success(SuccessCode.SCHEDULE_SUCCESS, calendarResponse);
+        }catch (NotFoundException | BadRequestException e) {
+            return ErrorResponse.error(e.getErrorCode());
+        }
     }
 
     @GetMapping("/date")
