@@ -4,11 +4,10 @@ import com.example.letscareer.schedule.domain.dto.StageDTO;
 
 import java.util.List;
 
-public record ScheduleResponse(
-    Integer page,
-    Integer size,
-    Long total,
-    List<StageDTO> schedules
-
+public record CalendarResponse(
+        Integer docCount,
+        Integer midCount,
+        Integer interviewCount,
+        List<StageDTO> schedules
 ) {
 }

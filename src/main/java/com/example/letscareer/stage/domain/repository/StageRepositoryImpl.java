@@ -70,6 +70,18 @@ public class StageRepositoryImpl implements StageRepositoryCustom {
     }
 
     @Override
+    public List<Stage> findAllByUserIdAndMonth(Long userId, int month) {
+        return queryFactory
+                .selectFrom(stage)
+                .where(
+                        stage.schedule.user.userId.eq(userId),
+                        stage.date.month().eq(month)
+                )
+                .fetch();
+    }
+
+
+    @Override
     public Page<Stage> findAllByScheduleInAndDateBetweenAndIntReviewNotExistsAndMidReviewNotExists(
             List<Schedule> schedules, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 

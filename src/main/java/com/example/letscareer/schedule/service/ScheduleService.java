@@ -38,7 +38,7 @@ public class ScheduleService {
     private final IntReviewRepository intReviewRepository;
     private final MidReviewRepository midReviewRepository;
 
-    public ScheduleResponse getSchedules(final Long userId, final int month, final int page, final int size) {
+    public ScheduleResponse getSchedulesComing(final Long userId, final int month, final int page, final int size) {
 
         Optional<User> user = userRepository.findByUserId(userId);
         if (user.isEmpty()) {
@@ -49,6 +49,54 @@ public class ScheduleService {
 
         // user, month 로 stage 찾기
         Page<Stage> stagePage = stageRepository.findAllByUserIdAndMonth(userId, month, pageable);
+        long total = stagePage.getTotalElements();
+
+        List<StageDTO> schedules = new ArrayList<>();
+
+        for (Stage stage : stagePage) {
+            Schedule schedule = stage.getSchedule();
+            if (schedule != null) {
+                Long scheduleId = schedule.getScheduleId();
+                Long stageId = stage.getStageId();
+                String type = stage.getType().getValue();
+                LocalDate deadline = stage.getDate();
+
+                Integer dday = (deadline != null) ? stage.calculateDday() : null;
+
+                schedules.add(new StageDTO(
+                        scheduleId,
+                        stageId,
+                        schedule.getCompany(),
+                        schedule.getDepartment(),
+                        type,
+                        deadline,
+                        dday,
+                        schedule.getProgress()
+                ));
+            }
+        }
+
+         //sort  -1, -3, +1
+        schedules.sort(
+                Comparator.<StageDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
+                        .thenComparingInt(dto -> Math.abs(dto.dday()))  // 절대값 기준 정렬
+        );
+        return new ScheduleResponse(
+                page,
+                size,
+                total,
+                schedules
+        );
+    }
+    public CalendarResponse getSchedulesCalendar(final Long userId, final int month) {
+
+        Optional<User> user = userRepository.findByUserId(userId);
+        if (user.isEmpty()) {
+            throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+        }
+
+        // user, month 로 stage 찾기
+        List<Stage> stages = stageRepository.findAllByUserIdAndMonth(userId, month);
 
         int docCount = 0;
         int midCount = 0;
@@ -56,7 +104,7 @@ public class ScheduleService {
 
         List<StageDTO> schedules = new ArrayList<>();
 
-        for (Stage stage : stagePage) {
+        for (Stage stage : stages) {
             Schedule schedule = stage.getSchedule();
             if (schedule != null) {
                 Long scheduleId = schedule.getScheduleId();
@@ -90,14 +138,7 @@ public class ScheduleService {
             }
         }
 
-         //sort  -1, -3, +1
-        schedules.sort(
-                Comparator.<StageDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
-                        .thenComparingInt(dto -> Math.abs(dto.dday()))  // 절대값 기준 정렬
-        );
-        return new ScheduleResponse(
-                page,
-                size,
+        return new CalendarResponse(
                 docCount,
                 midCount,
                 interviewCount,
