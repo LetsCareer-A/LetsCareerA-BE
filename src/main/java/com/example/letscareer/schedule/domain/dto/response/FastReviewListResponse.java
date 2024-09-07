@@ -7,7 +7,7 @@ import java.util.List;
 public record FastReviewListResponse(
         Integer page,
         Integer size,
-        Integer cnt,
+        Integer total,
         List<FastDTO> fastReviews
 ) {
 }

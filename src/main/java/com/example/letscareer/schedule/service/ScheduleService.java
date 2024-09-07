@@ -186,44 +186,38 @@ public class ScheduleService {
 
         return new AlwaysResponse(page, size, alwaysList);
     }
-    public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size){
+    public FastReviewListResponse getFastReviews(final Long userId, final int page, final int size) {
         LocalDate today = LocalDate.now();
         LocalDate threeDaysPrevious = today.minusDays(4);
 
-        Pageable pageable = PageRequest.of(page - 1, size); // JPA는 페이지 인덱스가 0부터 시작
+        Pageable pageable = PageRequest.of(page - 1, size); // 페이지네이션을 Stage 단위로 처리
 
-        // 사용자 ID로 모든 Schedule 조회
-        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
+        // 먼저 userId로 Schedule 목록을 가져옴
+        List<Schedule> schedules = scheduleRepository.findAllByUserUserId(userId);
+
+        if (schedules.isEmpty()) {
+            return new FastReviewListResponse(page, size, 0, new ArrayList<>());
+        }
+
+        // QueryDSL로 Stage 조회
+        Page<Stage> stagePage = stageRepository.findAllByScheduleInAndDateBetweenAndIntReviewNotExistsAndMidReviewNotExists(
+                schedules, threeDaysPrevious, today, pageable);
 
         List<FastDTO> fastReviews = new ArrayList<>();
 
-        int cnt = 0; // D+3까지 회고 없는 stage 개수
-
-        for (Schedule schedule : schedulePage) {
-            // 오늘부터  3일 지난  Stage를 조회
-            List<Stage> stages = stageRepository.findAllByScheduleAndDateBetween(schedule, threeDaysPrevious, today);
-
-            for (Stage stage : stages) {
-                boolean hasIntReview = intReviewRepository.existsByStage(stage);
-                boolean hasMidReview = midReviewRepository.existsByStage(stage);
-
-                if (!hasIntReview && !hasMidReview) {
-                    // 회고가 없는 Stage만 리스트에 추가
-                    cnt++; // 회고 없는 stage 개수 증가
-                    fastReviews.add(new FastDTO(
-                            stage.getStageId(),
-                            schedule.getScheduleId(),
-                            schedule.getCompany(),
-                            schedule.getDepartment()
-                    ));
-                }
-            }
+        for (Stage stage : stagePage) {
+            fastReviews.add(new FastDTO(
+                    stage.getStageId(),
+                    stage.getSchedule().getScheduleId(),
+                    stage.getSchedule().getCompany(),
+                    stage.getSchedule().getDepartment()
+            ));
         }
 
         return new FastReviewListResponse(
                 page,
                 size,
-                cnt,
+                (int) stagePage.getTotalElements(),
                 fastReviews
         );
     }
