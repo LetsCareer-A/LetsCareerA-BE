@@ -28,7 +28,7 @@ public class TodoService {
         List<Todo> todoList = todoRepository.findAllByUserUserId(userId);
 
         List<TodoDTO> todos = todoList.stream()
-                .map(t -> new TodoDTO(t.getContent(), t.isChecked()))
+                .map(t -> new TodoDTO(t.getTodoId(),t.getContent(), t.isChecked()))
                 .collect(Collectors.toList());
 
         return new TodoResponse(todos);
