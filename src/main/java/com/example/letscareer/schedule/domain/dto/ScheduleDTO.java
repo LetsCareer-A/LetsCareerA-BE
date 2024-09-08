@@ -1,10 +1,10 @@
 package com.example.letscareer.schedule.domain.dto;
 
-import com.example.letscareer.schedule.domain.model.Progress;
+import com.example.letscareer.stage.domain.model.Status;
 
 import java.time.LocalDate;
 
-public record StageDTO(
+public record ScheduleDTO(
         Long scheduleId,
         Long stageId,
         String company,
@@ -12,5 +12,5 @@ public record StageDTO(
         String type,
         LocalDate deadline,
         int dday,
-        Progress progress){
+        String status){
 }

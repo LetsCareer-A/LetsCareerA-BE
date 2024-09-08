@@ -51,7 +51,7 @@ public class ScheduleService {
         Page<Stage> stagePage = stageRepository.findAllByUserIdAndMonth(userId, month, pageable);
         long total = stagePage.getTotalElements();
 
-        List<StageDTO> schedules = new ArrayList<>();
+        List<ScheduleDTO> schedules = new ArrayList<>();
 
         for (Stage stage : stagePage) {
             Schedule schedule = stage.getSchedule();
@@ -59,11 +59,12 @@ public class ScheduleService {
                 Long scheduleId = schedule.getScheduleId();
                 Long stageId = stage.getStageId();
                 String type = stage.getType().getValue();
+                String status = stage.getStatus().getValue();
                 LocalDate deadline = stage.getDate();
 
                 Integer dday = (deadline != null) ? stage.calculateDday() : null;
 
-                schedules.add(new StageDTO(
+                schedules.add(new ScheduleDTO(
                         scheduleId,
                         stageId,
                         schedule.getCompany(),
@@ -71,14 +72,14 @@ public class ScheduleService {
                         type,
                         deadline,
                         dday,
-                        schedule.getProgress()
+                        status
                 ));
             }
         }
 
          //sort  -1, -3, +1
         schedules.sort(
-                Comparator.<StageDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
+                Comparator.<ScheduleDTO>comparingInt(dto -> (dto.dday() < 0 ? -1 : 1)) // 음수 dday 우선 정렬
                         .thenComparingInt(dto -> Math.abs(dto.dday()))  // 절대값 기준 정렬
         );
         return new ScheduleResponse(
@@ -102,7 +103,7 @@ public class ScheduleService {
         int midCount = 0;
         int interviewCount = 0;
 
-        List<StageDTO> schedules = new ArrayList<>();
+        List<ScheduleDTO> schedules = new ArrayList<>();
 
         for (Stage stage : stages) {
             Schedule schedule = stage.getSchedule();
@@ -110,6 +111,7 @@ public class ScheduleService {
                 Long scheduleId = schedule.getScheduleId();
                 Long stageId = stage.getStageId();
                 String type = stage.getType().getValue();
+                String status = stage.getStatus().getValue();
                 LocalDate deadline = stage.getDate();
 
                 switch (stage.getType()) {
@@ -125,7 +127,7 @@ public class ScheduleService {
                 }
                 Integer dday = (deadline != null) ? stage.calculateDday() : null;
 
-                schedules.add(new StageDTO(
+                schedules.add(new ScheduleDTO(
                         scheduleId,
                         stageId,
                         schedule.getCompany(),
@@ -133,7 +135,7 @@ public class ScheduleService {
                         type,
                         deadline,
                         dday,
-                        schedule.getProgress()
+                        status
                 ));
             }
         }
@@ -174,7 +176,7 @@ public class ScheduleService {
                 Integer dday = (stage.getDate() != null) ? stage.calculateDday() : null;
 
                 // 진행 상태
-                String progress = schedule.getProgress().getValue();
+                String progress = stage.getStatus().getValue();
 
                 // DTO로 변환하여 리스트에 추가
                 schedules.add(new DateScheduleDTO(
@@ -235,10 +237,6 @@ public class ScheduleService {
 
         // 먼저 userId로 Schedule 목록을 가져옴
         List<Schedule> schedules = scheduleRepository.findAllByUserUserId(userId);
-
-        if (schedules.isEmpty()) {
-            return new FastReviewListResponse(page, size, 0, new ArrayList<>());
-        }
 
         // QueryDSL로 Stage 조회
         Page<Stage> stagePage = stageRepository.findAllByScheduleInAndDateBetweenAndIntReviewNotExistsAndMidReviewNotExists(
