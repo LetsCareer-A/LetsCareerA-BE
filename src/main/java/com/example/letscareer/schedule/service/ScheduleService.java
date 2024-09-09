@@ -261,81 +261,92 @@ public class ScheduleService {
         );
     }
     public CompanyReviewListResponse getCompanyReviewList(final Long userId, final int page, final int size) {
-        Pageable pageable = PageRequest.of(page - 1, size); // 페이지네이션
+        Pageable pageable = PageRequest.of(page - 1, size);
 
         // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
 
-        // 회사명(company)별로 스케줄을 그룹화하여 페이징 처리
-        Page<String> companyPage = scheduleRepository.findDistinctCompanyByUser(user, pageable);
+        // 지원별로 스케줄을 그룹화하여 페이징 처리
+        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
 
-        // 기업별로 리뷰를 분류하기 위한 List
+        // 기업별로 리뷰를 분류하기 위한 리스트
         List<CompanyReviewDTO> companies = new ArrayList<>();
 
-        // 각 회사별로 스케줄과 스테이지를 조회하고 리뷰 여부 확인
-        for (String company : companyPage) {
-            // 각 회사에 속하는 모든 스케줄 조회
-            List<Schedule> schedules = scheduleRepository.findAllByUserAndCompany(user, company);
+        // "서류"만 있는 스케줄을 제외하기 위한 리스트
+        List<Schedule> filteredSchedules = new ArrayList<>();
 
-            // 면접 및 중간 리뷰 리스트 초기화
+        // 각 스케줄을 확인하여 "면접"이나 "중간"이 있는 경우만 필터링
+        for (Schedule schedule : schedulePage) {
+            List<Stage> stages = stageRepository.findAllBySchedule(schedule);
+
+            // 스케줄의 스테이지 중 "면접"이나 "중간"이 있는지 확인
+            boolean hasInterviewOrMidterm = stages.stream()
+                    .anyMatch(stage -> stage.getType().getValue().equals("면접") || stage.getType().getValue().equals("중간"));
+
+            // "면접" 또는 "중간" 스테이지가 있으면 필터링된 리스트에 추가
+            if (hasInterviewOrMidterm) {
+                filteredSchedules.add(schedule);
+            }
+        }
+
+        // 필터링된 스케줄을 처리
+        for (Schedule schedule : filteredSchedules) {
+            String company = schedule.getCompany();
+            String department = schedule.getDepartment();
+
+            // 해당 스케줄의 모든 스테이지를 조회
+            List<Stage> stages = stageRepository.findAllBySchedule(schedule);
+
             List<CompanyReviewDetailDTO> interviewReviews = new ArrayList<>();
             List<CompanyReviewDetailDTO> midtermReviews = new ArrayList<>();
 
-            for (Schedule schedule : schedules) {
-                // 해당 스케줄의 모든 스테이지를 조회
-                List<Stage> stages = stageRepository.findAllBySchedule(schedule);
+            for (Stage stage : stages) {
+                String type = stage.getType().getValue();
+                boolean isReviewed = false;
+                Long reviewId = null;
 
-                for (Stage stage : stages) {
-                    String type = stage.getType().getValue();
-                    boolean isReviewed = false;
-                    Long reviewId = null;
+                if (type.equals("면접")) {
+                    isReviewed = intReviewRepository.existsByStage(stage);
+                    reviewId = isReviewed ? intReviewRepository.findIntReviewIdByStageAndUser(stage, user).orElse(null) : null;
 
-                    if (type.equals("면접")) {
-                        isReviewed = intReviewRepository.existsByStage(stage);
-                        if (isReviewed) {
-                            reviewId = intReviewRepository.findIntReviewIdByStageAndUser(stage, user).orElse(null);
-                        }
+                    // 면접 리뷰 추가
+                    CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
+                            schedule.getScheduleId(),
+                            stage.getStageId(),
+                            reviewId,
+                            schedule.getDepartment(),
+                            stage.getDate(),
+                            isReviewed
+                    );
+                    interviewReviews.add(reviewDetail);
 
-                        // 면접 리뷰 추가
-                        CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
-                                schedule.getScheduleId(),
-                                stage.getStageId(),
-                                reviewId,
-                                schedule.getDepartment(),
-                                stage.getDate(),
-                                isReviewed
-                        );
-                        interviewReviews.add(reviewDetail);
+                } else if (type.equals("중간")) {
+                    isReviewed = midReviewRepository.existsByStage(stage);
+                    reviewId = isReviewed ? midReviewRepository.findMidReviewIdByStageAndUser(stage, user).orElse(null) : null;
 
-                    } else if (type.equals("중간")) {
-                        isReviewed = midReviewRepository.existsByStage(stage);
-                        if (isReviewed) {
-                            reviewId = midReviewRepository.findMidReviewIdByStageAndUser(stage, user).orElse(null);
-                        }
-
-                        // 중간 리뷰 추가
-                        CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
-                                schedule.getScheduleId(),
-                                stage.getStageId(),
-                                reviewId,
-                                schedule.getDepartment(),
-                                stage.getDate(),
-                                isReviewed
-                        );
-                        midtermReviews.add(reviewDetail);
-                    }
+                    // 중간 리뷰 추가
+                    CompanyReviewDetailDTO reviewDetail = new CompanyReviewDetailDTO(
+                            schedule.getScheduleId(),
+                            stage.getStageId(),
+                            reviewId,
+                            schedule.getDepartment(),
+                            stage.getDate(),
+                            isReviewed
+                    );
+                    midtermReviews.add(reviewDetail);
                 }
             }
 
             // 회사별로 그룹화된 리뷰 DTO 추가
-            companies.add(new CompanyReviewDTO(company, interviewReviews, midtermReviews));
+            companies.add(new CompanyReviewDTO(company, department, interviewReviews, midtermReviews));
         }
 
+        // 총 페이지 수와 필터링된 스케줄에 따른 결과 반환
         return new CompanyReviewListResponse(
                 page,
                 size,
-                companyPage.getTotalElements(),
+                (long) filteredSchedules.size(),
                 companies
         );
     }
