@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.example.letscareer.common.exception.enums.ErrorCode.SCHEDULE_NOT_FOUND_EXCEPTION;
 import static com.example.letscareer.common.exception.enums.ErrorCode.USER_NOT_FOUND_EXCEPTION;
@@ -261,34 +262,21 @@ public class ScheduleService {
         );
     }
     public CompanyReviewListResponse getCompanyReviewList(final Long userId, final int page, final int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-
         // 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND_EXCEPTION));
 
-        // 지원별로 스케줄을 그룹화하여 페이징 처리
-        Page<Schedule> schedulePage = scheduleRepository.findAllByUserUserId(userId, pageable);
+        // 모든 스케줄을 가져와서 필터링
+        List<Schedule> schedules = scheduleRepository.findAllByUserUserId(userId);
+
+        // "서류"만 있는 스케줄을 제외하기 위한 필터링
+        List<Schedule> filteredSchedules = schedules.stream()
+                .filter(schedule -> stageRepository.findAllBySchedule(schedule).stream()
+                        .anyMatch(stage -> stage.getType().getValue().equals("면접") || stage.getType().getValue().equals("중간")))
+                .collect(Collectors.toList());
 
         // 기업별로 리뷰를 분류하기 위한 리스트
         List<CompanyReviewDTO> companies = new ArrayList<>();
-
-        // "서류"만 있는 스케줄을 제외하기 위한 리스트
-        List<Schedule> filteredSchedules = new ArrayList<>();
-
-        // 각 스케줄을 확인하여 "면접"이나 "중간"이 있는 경우만 필터링
-        for (Schedule schedule : schedulePage) {
-            List<Stage> stages = stageRepository.findAllBySchedule(schedule);
-
-            // 스케줄의 스테이지 중 "면접"이나 "중간"이 있는지 확인
-            boolean hasInterviewOrMidterm = stages.stream()
-                    .anyMatch(stage -> stage.getType().getValue().equals("면접") || stage.getType().getValue().equals("중간"));
-
-            // "면접" 또는 "중간" 스테이지가 있으면 필터링된 리스트에 추가
-            if (hasInterviewOrMidterm) {
-                filteredSchedules.add(schedule);
-            }
-        }
 
         // 필터링된 스케줄을 처리
         for (Schedule schedule : filteredSchedules) {
@@ -342,12 +330,17 @@ public class ScheduleService {
             companies.add(new CompanyReviewDTO(company, department, interviewReviews, midtermReviews));
         }
 
-        // 총 페이지 수와 필터링된 스케줄에 따른 결과 반환
+        // 필터링된 회사 리스트를 페이지네이션 적용
+        int start = (page - 1) * size;
+        int end = Math.min(start + size, companies.size());
+        List<CompanyReviewDTO> paginatedCompanies = companies.subList(start, end);
+
+        // 총 페이지 수와 필터링된 회사에 따른 결과 반환
         return new CompanyReviewListResponse(
                 page,
                 size,
-                (long) filteredSchedules.size(),
-                companies
+                (long) companies.size(),
+                paginatedCompanies
         );
     }
 
