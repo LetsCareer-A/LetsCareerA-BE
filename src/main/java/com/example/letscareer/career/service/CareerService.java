@@ -52,10 +52,10 @@ public class CareerService {
     }
 
     @Transactional
-    public GetCareersResponse getCareers(Long userId, int page, int size) {
+    public GetCareersResponse getCareers(Long userId, int page, int size, List<String> category) {
         User user = getUser(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Career> careers = careerRepository.findByUser(user, pageable);
+        Page<Career> careers = careerRepository.findByUserAndCategoryIn(user, category, pageable);
         List<CareerDTO> careerDTOS = CareerConverter.convertToCareerDTOList(careers);
 
         return GetCareersResponse.from(careers, careerDTOS);

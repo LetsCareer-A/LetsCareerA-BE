@@ -14,6 +14,8 @@ import com.example.letscareer.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/careers")
@@ -47,9 +49,10 @@ public class CareerController {
     @GetMapping
     public ApiResponse getCareers(@RequestHeader("userId") Long userId,
                                   @RequestParam(value = "page", defaultValue = "1") int page,
-                                  @RequestParam(value = "size", defaultValue = "15") int size) {
+                                  @RequestParam(value = "size", defaultValue = "15") int size,
+                                  @RequestParam(value = "category", defaultValue = "ACTIVITY") List<String> category) {
         try {
-            return SuccessResponse.success(SuccessCode.GET_CAREER_SUCCESS, careerService.getCareers(userId, page, size));
+            return SuccessResponse.success(SuccessCode.GET_CAREER_SUCCESS, careerService.getCareers(userId, page, size, category));
         } catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
