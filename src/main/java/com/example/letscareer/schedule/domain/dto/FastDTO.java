@@ -4,6 +4,7 @@ public record FastDTO(
         Long stageId,
         Long scheduleId,
         String company,
-        String department
+        String department,
+        String type
 ) {
 }

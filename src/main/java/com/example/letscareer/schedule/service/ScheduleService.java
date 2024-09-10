@@ -250,7 +250,8 @@ public class ScheduleService {
                     stage.getStageId(),
                     stage.getSchedule().getScheduleId(),
                     stage.getSchedule().getCompany(),
-                    stage.getSchedule().getDepartment()
+                    stage.getSchedule().getDepartment(),
+                    stage.getType().getValue()
             ));
         }
 
