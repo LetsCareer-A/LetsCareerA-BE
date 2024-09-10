@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface CareerRepository extends JpaRepository<Career, Long> {
     Optional<Career> findByCareerIdAndUser(Long careerId, User user);
 
-    Page<Career> findByUser(User user, Pageable pageable);
-
     List<Career> findByUser(User user);
+
+    Page<Career> findByUserAndCategoryIn(User user, List<String> category, Pageable pageable);
 }
