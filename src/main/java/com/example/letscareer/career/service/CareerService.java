@@ -1,5 +1,8 @@
 package com.example.letscareer.career.service;
 
+import com.example.letscareer.appealCareer.domain.model.AppealCareer;
+import com.example.letscareer.appealCareer.domain.repository.AppealCareerRepository;
+import com.example.letscareer.career.domain.dto.CareerWithAppealDTO;
 import com.example.letscareer.career.domain.dto.converter.CareerConverter;
 import com.example.letscareer.career.domain.dto.response.GetAllCareersResponse;
 import com.example.letscareer.career.domain.model.Career;
@@ -11,6 +14,10 @@ import com.example.letscareer.career.domain.repository.CareerRepository;
 import com.example.letscareer.common.exception.enums.ErrorCode;
 import com.example.letscareer.common.exception.model.NotFoundException;
 import com.example.letscareer.common.exception.model.ValidationException;
+import com.example.letscareer.schedule.domain.model.Schedule;
+import com.example.letscareer.schedule.domain.repository.ScheduleRepository;
+import com.example.letscareer.stage.domain.model.Stage;
+import com.example.letscareer.stage.domain.repository.StageRepository;
 import com.example.letscareer.user.domain.User;
 import com.example.letscareer.user.domain.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -31,6 +38,9 @@ public class CareerService {
     @Autowired
     private final CareerRepository careerRepository;
     private final UserRepository userRepository;
+    private final AppealCareerRepository appealCareerRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final StageRepository stageRepository;
 
     @Transactional
     public void saveCareer(Long userId, SaveCareerRequest request) {
@@ -63,10 +73,16 @@ public class CareerService {
 
     @Transactional
     @Cacheable(value = "allCareersCache", key = "#userId", unless = "#result == null || #result.careers.size() == 0")
-    public GetAllCareersResponse getAllCareers(Long userId) {
+    public GetAllCareersResponse getAllCareers(Long userId, Long scheduleId, Long stageId) {
         User user = getUser(userId);
+        Schedule schedule = getSchedule(scheduleId);
+        Stage stage = getStage(schedule, stageId);
+
         List<Career> careers = careerRepository.findByUser(user);
-        List<CareerDTO> careerDTOS = CareerConverter.convertToCareerDTOList(careers);
+
+        // AppealCareer 테이블에서 해당 커리어들이 핵심으로 등록되었는지 확인
+        List<AppealCareer> appealCareers = appealCareerRepository.findByStageAndCareerIn(stage, careers);
+        List<CareerWithAppealDTO> careerDTOS = CareerConverter.convertToCareerWithAppealDTOList(careers, appealCareers);
         return new GetAllCareersResponse(careerDTOS);
     }
 
@@ -78,5 +94,15 @@ public class CareerService {
     private Career getCareer(Long careerId, User user) {
         return careerRepository.findByCareerIdAndUser(careerId, user)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.CAREER_NOT_FOUND_EXCEPTION));
+    }
+
+    private Schedule getSchedule(Long scheduleId) {
+        return scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.SCHEDULE_NOT_FOUND_EXCEPTION));
+    }
+
+    private Stage getStage(Schedule schedule, Long stageId) {
+        return stageRepository.findByStageIdAndSchedule(stageId, schedule)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.STAGE_NOT_FOUND_EXCEPTION));
     }
 }
