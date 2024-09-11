@@ -18,16 +18,14 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/careers")
 public class CareerController {
 
     private final UserRepository userRepository;
     private final CareerService careerService;
 
-    @PostMapping
+    @PostMapping("/careers")
     public ApiResponse saveCareer(@RequestHeader("userId") Long userId,
                                   @RequestBody SaveCareerRequest request) {
-
         try {
             careerService.saveCareer(userId, request);
             return SuccessNonDataResponse.success(SuccessCode.SAVE_CAREER_SUCCESS);
@@ -36,7 +34,7 @@ public class CareerController {
         }
     }
 
-    @GetMapping("/{careerId}")
+    @GetMapping("/careers/{careerId}")
     public ApiResponse getCareerDetail(@RequestHeader("userId") Long userId,
                                  @PathVariable Long careerId) {
         try {
@@ -46,7 +44,7 @@ public class CareerController {
         }
     }
 
-    @GetMapping
+    @GetMapping("/careers")
     public ApiResponse getCareers(@RequestHeader("userId") Long userId,
                                   @RequestParam(value = "page", defaultValue = "1") int page,
                                   @RequestParam(value = "size", defaultValue = "15") int size,
@@ -58,10 +56,12 @@ public class CareerController {
         }
     }
 
-    @GetMapping("/all")
-    public ApiResponse getAllCareers(@RequestHeader("userId") Long userId) {
+    @GetMapping("/schedules/{scheduleId}/stages/{stageId}/careers/all")
+    public ApiResponse getAllCareers(@RequestHeader("userId") Long userId,
+                                     @PathVariable Long scheduleId,
+                                     @PathVariable Long stageId) {
         try {
-            return SuccessResponse.success(SuccessCode.GET_ALL_CAREERS_SUCCESS, careerService.getAllCareers(userId));
+            return SuccessResponse.success(SuccessCode.GET_ALL_CAREERS_SUCCESS, careerService.getAllCareers(userId, scheduleId, stageId));
         } catch (NotFoundException | BadRequestException e) {
             return ErrorResponse.error(e.getErrorCode());
         }
