@@ -62,6 +62,7 @@ public class CareerService {
     }
 
     @Transactional
+    @Cacheable(value = "CareersCache", key = "#userId", unless = "#result == null || #result.careers.size() == 0")
     public GetCareersResponse getCareers(Long userId, int page, int size, List<String> category) {
         User user = getUser(userId);
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -72,7 +73,6 @@ public class CareerService {
     }
 
     @Transactional
-    @Cacheable(value = "allCareersCache", key = "#userId", unless = "#result == null || #result.careers.size() == 0")
     public GetAllCareersResponse getAllCareers(Long userId, Long scheduleId, Long stageId) {
         User user = getUser(userId);
         Schedule schedule = getSchedule(scheduleId);
