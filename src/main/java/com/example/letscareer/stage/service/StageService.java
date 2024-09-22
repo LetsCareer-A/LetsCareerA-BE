@@ -3,7 +3,6 @@ package com.example.letscareer.stage.service;
 import com.example.letscareer.appealCareer.domain.model.AppealCareer;
 import com.example.letscareer.appealCareer.domain.repository.AppealCareerRepository;
 import com.example.letscareer.common.exception.model.NotFoundException;
-import com.example.letscareer.int_review.domain.model.IntReview;
 import com.example.letscareer.int_review.domain.repository.IntReviewRepository;
 import com.example.letscareer.mid_review.domain.model.MidReview;
 import com.example.letscareer.mid_review.domain.repository.MidReviewRepository;
@@ -14,8 +13,6 @@ import com.example.letscareer.self_intro.domain.dto.SelfIntroDTO;
 import com.example.letscareer.self_intro.domain.repository.SelfIntroRepository;
 import com.example.letscareer.stage.domain.dto.converter.StageConverter;
 import com.example.letscareer.stage.domain.model.Stage;
-import com.example.letscareer.stage.domain.model.Status;
-import com.example.letscareer.stage.domain.model.Type;
 import com.example.letscareer.stage.domain.dto.AppealCareerDTO;
 import com.example.letscareer.stage.domain.dto.IntReviewDTO;
 import com.example.letscareer.stage.domain.dto.MidReviewDTO;
@@ -33,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
